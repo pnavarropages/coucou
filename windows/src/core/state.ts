@@ -207,6 +207,8 @@ export const DIFF_TTL_MS = 3_600_000;
 
 class AppState {
   mode: IslandMode = "hidden";
+  /** Fork: taskbar height at the bottom of the island's display, logical px. */
+  taskbarH = 0;
   view: IslandViewName = "overview";
 
   tasks: AgentTask[] = [];

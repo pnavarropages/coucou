@@ -46,6 +46,7 @@ async function main() {
   const boot = await Bridge.boot();
   if (boot) {
     State.settings = { ...State.settings, ...boot.settings };
+    State.taskbarH = boot.screen.taskbar;
   }
   // A language change redraws the island in place: the texts given as tl(…)
   // relabel themselves (views/dom.ts) and the views redraw the rest on this
@@ -106,6 +107,8 @@ async function main() {
   };
 
   await onEvent<null>("screen-changed", async () => {
+    const b = await Bridge.boot();
+    if (b) State.taskbarH = b.screen.taskbar;
     await checkZoom();
     void Bridge.reposition();
     island.ensureRunning();
