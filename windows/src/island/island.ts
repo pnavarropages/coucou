@@ -4,6 +4,7 @@
 import { Tracked, Spring, clamp } from "../core/anim";
 import { Bridge, IS_TAURI, onDragDrop } from "../core/bridge";
 import {
+  DOCK_BOTTOM, DOCK_GAP,
   EXPANDED_CORNER, EXPANDED_W, NOTCH_W, PANEL_H, PANEL_W,
   ROUNDED_CORNER, VIEW_LAYOUTS, botGlowColor, botGlowOpacity, botPosition, chatPromptHeight,
   islandSize,
@@ -716,7 +717,13 @@ export class Island {
     const r = this.radius.value;
     this.islandEl.style.width = `${w}px`;
     this.islandEl.style.height = `${hh}px`;
-    this.islandEl.style.borderRadius = `0 0 ${r}px ${r}px`;
+    if (DOCK_BOTTOM) {
+      this.islandEl.style.top = "auto";
+      this.islandEl.style.bottom = `${DOCK_GAP}px`;
+      this.islandEl.style.borderRadius = `${r}px`;
+    } else {
+      this.islandEl.style.borderRadius = `0 0 ${r}px ${r}px`;
+    }
     this.islandEl.style.transform = `translateX(-50%)`;
     // These follow the island as it resizes, so they belong here rather than in
     // the state-driven DOM sync.
@@ -727,7 +734,7 @@ export class Island {
     this.uploadCanvas.el.style.left = `${(w - EXPANDED_W) / 2}px`;
 
     const viewportW = window.innerWidth > 0 ? window.innerWidth : PANEL_W;
-    const rect = { x: (viewportW - w) / 2, y: 0, w, h: hh };
+    const rect = { x: (viewportW - w) / 2, y: this.islandTop(hh), w, h: hh };
     const p = this.pushedRect;
     if (Math.abs(p.x - rect.x) > 0.5 || Math.abs(p.w - rect.w) > 0.5 || Math.abs(p.h - rect.h) > 0.5) {
       this.pushedRect = rect;
@@ -740,7 +747,14 @@ export class Island {
     const w = this.width.value;
     const hh = this.height.value;
     const viewportW = window.innerWidth > 0 ? window.innerWidth : PANEL_W;
-    return { x: (viewportW - w) / 2, y: 0, w, h: hh };
+    return { x: (viewportW - w) / 2, y: this.islandTop(hh), w, h: hh };
+  }
+
+  /** Top edge of the island in window coordinates (fork: docked to the bottom). */
+  private islandTop(h: number): number {
+    if (!DOCK_BOTTOM) return 0;
+    const vh = window.innerHeight > 0 ? window.innerHeight : PANEL_H;
+    return vh - DOCK_GAP - h;
   }
 
   // ── Window collapse (hidden → tiny wake strip, zero polling) ────────────────
@@ -1178,7 +1192,7 @@ export class Island {
   }
 
   private lookY(): number {
-    return -Math.tanh((State.mouse.y - this.botCy.value) / 200);
+    return -Math.tanh((State.mouse.y - (this.islandRect().y + this.botCy.value)) / 200);
   }
 
   private updateCountdown(nowMs: number) {

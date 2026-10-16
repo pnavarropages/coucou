@@ -21,6 +21,10 @@ pub const PANEL_H: f64 = 320.0;
 pub const STRIP_W: f64 = 240.0;
 pub const STRIP_H: f64 = 6.0;
 
+/// Fork: dock the island at the bottom of the display, just above the taskbar,
+/// growing upwards. Must match `DOCK_BOTTOM` in src/core/layout.ts.
+pub const DOCK_BOTTOM: bool = true;
+
 pub const WINDOW_LABEL: &str = "island";
 
 /// Margin around the island that still counts as "on the island", in logical px.
@@ -363,7 +367,17 @@ pub fn apply_geometry(app: &AppHandle, pref: &str, collapsed: bool) {
     let pw = (lw * scale).round().max(1.0) as u32;
     let ph = (lh * scale).round().max(1.0) as u32;
     let x = mp.x + (ms.width as i32 - pw as i32) / 2;
-    let y = mp.y;
+    let y = if DOCK_BOTTOM {
+        // Primary display: stop at the work area (above the taskbar). Others: the screen edge.
+        let bottom = if mp.x == 0 && mp.y == 0 {
+            platform::work_area_bottom().unwrap_or(mp.y + ms.height as i32)
+        } else {
+            mp.y + ms.height as i32
+        };
+        bottom - ph as i32
+    } else {
+        mp.y
+    };
 
     // GTK never sizes a non-resizable window below its natural size (200 px
     // here), so on Linux the 6 px wake strip would stay a 200 px block. tao
@@ -518,7 +532,7 @@ pub fn refresh_click_through(app: &AppHandle, gate: &PollGate) {
         // The wake strip itself, never "the whole window": if the window ever
         // fails to shrink to the strip, the rest of it must not swallow clicks
         // meant for whatever sits under the top of the screen.
-        Some((0.0, 0.0, STRIP_W, STRIP_H))
+        Some((0.0, if DOCK_BOTTOM { PANEL_H - STRIP_H } else { 0.0 }, STRIP_W, STRIP_H))
     } else {
         let r = *gate.rect.lock().unwrap();
         if r.w <= 0.0 {

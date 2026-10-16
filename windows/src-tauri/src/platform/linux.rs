@@ -938,3 +938,8 @@ fn apply_rects(gw: &impl IsA<gtk::Widget>, rects: &[(f64, f64, f64, f64)]) {
     }
     gdk_window.input_shape_combine_region(&region, 0, 0);
 }
+
+/// Fork: no work-area query on Linux; the monitor's bottom edge is used.
+pub fn work_area_bottom() -> Option<i32> {
+    None
+}

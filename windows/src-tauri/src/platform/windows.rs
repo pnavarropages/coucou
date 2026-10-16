@@ -359,6 +359,26 @@ pub fn set_pointer_watch(_active: bool) {}
 /// `set_position` already places a Win32 window on the right display.
 pub fn pin_to_monitor(_win: &WebviewWindow, _x: i32, _y: i32) {}
 
+/// Fork: bottom edge (physical px) of the primary display's work area, i.e. the
+/// top edge of the taskbar when it sits at the bottom.
+pub fn work_area_bottom() -> Option<i32> {
+    use ::windows::Win32::Foundation::RECT;
+    use ::windows::Win32::UI::WindowsAndMessaging::{
+        SystemParametersInfoW, SPI_GETWORKAREA, SYSTEM_PARAMETERS_INFO_UPDATE_FLAGS,
+    };
+    let mut r = RECT::default();
+    unsafe {
+        SystemParametersInfoW(
+            SPI_GETWORKAREA,
+            0,
+            Some(&mut r as *mut RECT as *mut _),
+            SYSTEM_PARAMETERS_INFO_UPDATE_FLAGS(0),
+        )
+        .ok()?;
+    }
+    (r.bottom > r.top).then_some(r.bottom)
+}
+
 // ── Session windows ("Open terminal") ─────────────────────────────────────────
 //
 // See session_window.rs: the relay's ancestors lead to the terminal or editor
