@@ -24,6 +24,8 @@ pub const STRIP_H: f64 = 6.0;
 /// Fork: dock the island at the bottom of the display, just above the taskbar,
 /// growing upwards. Must match `DOCK_BOTTOM` in src/core/layout.ts.
 pub const DOCK_BOTTOM: bool = true;
+/// Fork: logical height reserved above the taskbar (the compact island plus its margins).
+pub const STRIP_RESERVED: f64 = 44.0;
 
 pub const WINDOW_LABEL: &str = "island";
 
@@ -338,17 +340,6 @@ mod zoom_tests {
 }
 
 
-/// Fork: taskbar height at the bottom of the monitor, physical px.
-fn taskbar_physical(m: &Monitor) -> i32 {
-    let mp = m.position();
-    let bottom = mp.y + m.size().height as i32;
-    if mp.x == 0 && mp.y == 0 {
-        platform::work_area_bottom().map(|w| (bottom - w).max(0)).unwrap_or(0)
-    } else {
-        0
-    }
-}
-
 pub fn screen_info(app: &AppHandle, pref: &str) -> ScreenInfo {
     match target_monitor(app, pref) {
         Some(m) => {
@@ -361,7 +352,7 @@ pub fn screen_info(app: &AppHandle, pref: &str) -> ScreenInfo {
                 width: s.width as f64 / scale,
                 height: s.height as f64 / scale,
                 scale,
-                taskbar: taskbar_physical(&m) as f64 / scale,
+                taskbar: 0.0,
             }
         }
         None => ScreenInfo { x: 0.0, y: 0.0, width: 1920.0, height: 1080.0, scale: 1.0, taskbar: 0.0 },
@@ -381,9 +372,16 @@ pub fn apply_geometry(app: &AppHandle, pref: &str, collapsed: bool) {
     let pw = (lw * scale).round().max(1.0) as u32;
     let ph = (lh * scale).round().max(1.0) as u32;
     let x = mp.x + (ms.width as i32 - pw as i32) / 2;
-    // Fork: the window's bottom edge is the screen's bottom edge, so the island
-    // can sit inside the taskbar (the page offsets it by the taskbar height).
-    let y = if DOCK_BOTTOM { mp.y + ms.height as i32 - ph as i32 } else { mp.y };
+    // Fork: the window's bottom edge is the top of the taskbar (primary display) or
+    // of the screen; the island stands on it, and a strip is reserved for it below.
+    let monitor_bottom = mp.y + ms.height as i32;
+    let on_primary = mp.x == 0 && mp.y == 0;
+    let dock_bottom = if on_primary {
+        platform::taskbar_top(mp.y, ms.height as i32).unwrap_or(monitor_bottom)
+    } else {
+        monitor_bottom
+    };
+    let y = if DOCK_BOTTOM { dock_bottom - ph as i32 } else { mp.y };
 
     // GTK never sizes a non-resizable window below its natural size (200 px
     // here), so on Linux the 6 px wake strip would stay a 200 px block. tao
@@ -411,6 +409,12 @@ pub fn apply_geometry(app: &AppHandle, pref: &str, collapsed: bool) {
             let _ = win.set_size(PhysicalSize::new(pw, ph));
             let _ = win.set_position(PhysicalPosition::new(x, y));
         }
+    }
+
+    // Fork: apps maximise above the island instead of under it.
+    if DOCK_BOTTOM && on_primary {
+        let strip = ((crate::island::STRIP_RESERVED) * scale).round() as i32;
+        platform::reserve_strip(&win, mp.x, mp.x + ms.width as i32, dock_bottom, strip);
     }
 }
 
