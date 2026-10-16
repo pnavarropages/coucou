@@ -4,7 +4,7 @@
 import { Tracked, Spring, clamp } from "../core/anim";
 import { Bridge, IS_TAURI, onDragDrop } from "../core/bridge";
 import {
-  DOCK_BOTTOM, DOCK_GAP,
+  DOCK_BOTTOM, DOCK_GAP, NOTCH_H,
   EXPANDED_CORNER, EXPANDED_W, NOTCH_W, PANEL_H, PANEL_W,
   ROUNDED_CORNER, VIEW_LAYOUTS, botGlowColor, botGlowOpacity, botPosition, chatPromptHeight,
   islandSize,
@@ -675,7 +675,7 @@ export class Island {
     this.islandEl.style.height = `${hh}px`;
     if (DOCK_BOTTOM) {
       this.islandEl.style.top = "auto";
-      this.islandEl.style.bottom = `${DOCK_GAP}px`;
+      this.islandEl.style.bottom = `${this.dockBottom(hh)}px`;
       this.islandEl.style.borderRadius = `${r}px`;
     } else {
       this.islandEl.style.borderRadius = `0 0 ${r}px ${r}px`;
@@ -709,7 +709,21 @@ export class Island {
   private islandTop(h: number): number {
     if (!DOCK_BOTTOM) return 0;
     const vh = window.innerHeight > 0 ? window.innerHeight : PANEL_H;
-    return vh - DOCK_GAP - h;
+    return vh - this.dockBottom(h) - h;
+  }
+
+  /**
+   * Fork: distance from the bottom of the window to the island. Compact, it sits
+   * in the middle of the taskbar; opened, it stands on top of the taskbar and
+   * grows upwards, so it never covers the taskbar itself.
+   */
+  private dockBottom(h: number): number {
+    const tb = State.taskbarH;
+    if (tb <= 0) return DOCK_GAP;
+    const inBar = Math.max(2, (tb - h) / 2);
+    const above = tb + DOCK_GAP;
+    const t = clamp((h - NOTCH_H) / 40, 0, 1);
+    return inBar + (above - inBar) * t;
   }
 
   // ── Window collapse (hidden → tiny wake strip, zero polling) ────────────────
