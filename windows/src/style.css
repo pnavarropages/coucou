@@ -80,6 +80,13 @@ body {
   will-change: width, height, transform;
 }
 
+/* Fork: docked above the taskbar the island sits on dark apps, so it gets a light
+   ring and a shadow to stay visible. */
+#island.docked {
+  background: #0c0c0f;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.28), 0 4px 16px rgba(0, 0, 0, 0.6);
+}
+
 #island-clip {
   position: absolute;
   inset: 0;

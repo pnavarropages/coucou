@@ -674,6 +674,7 @@ export class Island {
     this.islandEl.style.width = `${w}px`;
     this.islandEl.style.height = `${hh}px`;
     if (DOCK_BOTTOM) {
+      this.islandEl.classList.add("docked");
       this.islandEl.style.top = "auto";
       this.islandEl.style.bottom = `${this.dockBottom(hh)}px`;
       this.islandEl.style.borderRadius = `${r}px`;
