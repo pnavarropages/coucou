@@ -1,6 +1,8 @@
 // Island open/close FSM — port of IslandStateMachine.swift.
 // No DOM, no Tauri: it only reports transitions.
 
+import { ALWAYS_VISIBLE } from "../core/layout";
+
 export type FsmState = "hidden" | "petit" | "home" | "coucou";
 
 export class IslandStateMachine {
@@ -205,6 +207,8 @@ export class IslandStateMachine {
   }
 
   private transition(next: FsmState) {
+    // Fork: the island never retreats to the wake strip.
+    if (ALWAYS_VISIBLE && next === "hidden") next = "petit";
     if (next === this.state) return;
     const from = this.state;
     this.state = next;
