@@ -939,7 +939,9 @@ fn apply_rects(gw: &impl IsA<gtk::Widget>, rects: &[(f64, f64, f64, f64)]) {
     gdk_window.input_shape_combine_region(&region, 0, 0);
 }
 
-/// Fork: no work-area query on Linux; the monitor's bottom edge is used.
-pub fn work_area_bottom() -> Option<i32> {
+/// Fork: no taskbar query on Linux.
+pub fn taskbar_top(_monitor_top: i32, _monitor_height: i32) -> Option<i32> {
     None
 }
+pub fn reserve_strip(_win: &WebviewWindow, _left: i32, _right: i32, _bottom: i32, _height: i32) {}
+pub fn release_strip(_win: &WebviewWindow) {}

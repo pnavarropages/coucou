@@ -121,6 +121,9 @@ export function buildHeader(actions: ViewActions): ViewHost {
 
   const gearBtn = h("button", { title: tl("Settings"), onclick: () => go("settings") }, svg(ICONS.gear, 14));
   const soundBtn = h("button", { title: tl("Mute"), onclick: () => actions.toggleSound() }, svg(ICONS.speakerOn, 14));
+  // Fork: open the Coucou window, and fold the island back to the bar.
+  const openBtn = h("button", { title: tl("Open Coucou"), onclick: () => actions.openSettingsWindow() }, svg(ICONS.arrowUpRight, 14));
+  const foldBtn = h("button", { title: tl("Close"), onclick: () => actions.collapse() }, svg(ICONS.chevronDown, 14));
   // Plan usage pills (off by default): before the gear, Claude first, as on the Mac.
   const claudePill = buildPlanPill(false);
   const codexPill = buildPlanPill(true);
@@ -136,7 +139,7 @@ export function buildHeader(actions: ViewActions): ViewHost {
     "div",
     { id: "header" },
     h("div", { class: "tabs" }, tabHome, tabChat, tabDrop),
-    h("div", { class: "header-actions" }, planPills, gearBtn, soundBtn),
+    h("div", { class: "header-actions" }, planPills, gearBtn, soundBtn, openBtn, foldBtn),
   );
   const headerActions = el.lastElementChild as HTMLElement;
 

@@ -359,24 +359,55 @@ pub fn set_pointer_watch(_active: bool) {}
 /// `set_position` already places a Win32 window on the right display.
 pub fn pin_to_monitor(_win: &WebviewWindow, _x: i32, _y: i32) {}
 
-/// Fork: bottom edge (physical px) of the primary display's work area, i.e. the
-/// top edge of the taskbar when it sits at the bottom.
-pub fn work_area_bottom() -> Option<i32> {
+/// Fork: top edge (physical px) of the taskbar, when it sits at the bottom of the
+/// primary display. None when it is elsewhere, hidden or not found.
+pub fn taskbar_top(monitor_top: i32, monitor_height: i32) -> Option<i32> {
     use ::windows::Win32::Foundation::RECT;
-    use ::windows::Win32::UI::WindowsAndMessaging::{
-        SystemParametersInfoW, SPI_GETWORKAREA, SYSTEM_PARAMETERS_INFO_UPDATE_FLAGS,
-    };
-    let mut r = RECT::default();
+    use ::windows::Win32::UI::WindowsAndMessaging::{FindWindowW, GetWindowRect};
     unsafe {
-        SystemParametersInfoW(
-            SPI_GETWORKAREA,
-            0,
-            Some(&mut r as *mut RECT as *mut _),
-            SYSTEM_PARAMETERS_INFO_UPDATE_FLAGS(0),
-        )
-        .ok()?;
+        let tray = FindWindowW(w!("Shell_TrayWnd"), None).ok()?;
+        let mut r = RECT::default();
+        GetWindowRect(tray, &mut r).ok()?;
+        let at_bottom = r.top > monitor_top + monitor_height / 2 && r.bottom >= monitor_top + monitor_height - 2;
+        (at_bottom && r.bottom > r.top).then_some(r.top)
     }
-    (r.bottom > r.top).then_some(r.bottom)
+}
+
+/// Fork: reserve a strip above the taskbar (an "app bar", like the taskbar
+/// itself), so maximised windows stop above the island instead of under it.
+pub fn reserve_strip(win: &WebviewWindow, left: i32, right: i32, bottom: i32, height: i32) {
+    use ::windows::Win32::Foundation::RECT;
+    use ::windows::Win32::UI::Shell::{SHAppBarMessage, APPBARDATA};
+    use std::sync::atomic::{AtomicBool, Ordering};
+    static REGISTERED: AtomicBool = AtomicBool::new(false);
+    let Some(hwnd) = hwnd_of(win) else { return };
+    let mut abd = APPBARDATA {
+        cbSize: std::mem::size_of::<APPBARDATA>() as u32,
+        hWnd: hwnd,
+        uCallbackMessage: 0,
+        uEdge: 3, // ABE_BOTTOM
+        rc: RECT { left, top: bottom - height, right, bottom },
+        lParam: LPARAM(0),
+    };
+    unsafe {
+        if !REGISTERED.swap(true, Ordering::Relaxed) {
+            SHAppBarMessage(0, &mut abd); // ABM_NEW
+        }
+        abd.rc = RECT { left, top: bottom - height, right, bottom };
+        SHAppBarMessage(2, &mut abd); // ABM_QUERYPOS
+        abd.rc.top = abd.rc.bottom - height;
+        SHAppBarMessage(3, &mut abd); // ABM_SETPOS
+    }
+}
+
+/// Fork: gives the reserved strip back.
+pub fn release_strip(win: &WebviewWindow) {
+    use ::windows::Win32::UI::Shell::{SHAppBarMessage, APPBARDATA};
+    let Some(hwnd) = hwnd_of(win) else { return };
+    let mut abd = APPBARDATA { cbSize: std::mem::size_of::<APPBARDATA>() as u32, hWnd: hwnd, ..Default::default() };
+    unsafe {
+        SHAppBarMessage(1, &mut abd); // ABM_REMOVE
+    }
 }
 
 // ── Session windows ("Open terminal") ─────────────────────────────────────────

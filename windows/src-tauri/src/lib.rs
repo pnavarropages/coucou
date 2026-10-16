@@ -1074,6 +1074,9 @@ pub fn run() {
         .run(|app, event| {
             // Withdraw the phone link's announcement on the local network before the process ends.
             if let tauri::RunEvent::Exit = event {
+                if let Some(win) = island::window(app) {
+                    platform::release_strip(&win);
+                }
                 phone_link::stop_on_exit(app);
                 notes::shutdown(app);
                 // GOWA started by Coucou stops with it; the conversations were only in memory.
