@@ -72,6 +72,21 @@ section > h2 {
   gap: 8px;
 }
 
+/* WhatsApp: a small ring while GOWA installs or waits for its QR code. */
+.spinner {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid rgba(128, 128, 128, 0.3);
+  border-top-color: #25d366;
+  animation: wa-spin 0.9s linear infinite;
+  flex: 0 0 auto;
+}
+
+@keyframes wa-spin {
+  to { transform: rotate(360deg); }
+}
+
 .hint {
   font: 400 12px var(--font);
   color: var(--dim);

@@ -4350,6 +4350,50 @@
    "pt-BR": "O Coucou não conseguiu responder: verifique sua chave do Claude em Notch → Chat.",
    "ru": "Coucou не смог ответить: проверьте ключ Claude в Notch → Чат.",
    "id": "Coucou tidak bisa menjawab: periksa kunci Claude-mu di Notch → Obrolan."
+  },
+  "Unofficial integration: it goes through a gateway you run on this computer. Use it on your own account only. WhatsApp may restrict accounts that abuse it.": {
+   "zh-Hans": "非官方集成：通过你在这台电脑上运行的网关工作。仅限用于你自己的账号。滥用时 WhatsApp 可能会限制账号。",
+   "hi": "अनौपचारिक इंटीग्रेशन: यह इस कंप्यूटर पर चल रहे गेटवे से होकर काम करता है। सिर्फ़ अपने अकाउंट पर इस्तेमाल करें। दुरुपयोग पर WhatsApp अकाउंट सीमित कर सकता है।",
+   "es": "Integración no oficial: pasa por una pasarela que ejecutas en este ordenador. Úsala solo con tu propia cuenta. WhatsApp puede restringir las cuentas que abusen.",
+   "ar": "تكامل غير رسمي: يمرّ عبر بوابة تشغّلها على هذا الكمبيوتر. استخدمه على حسابك فقط. قد يقيّد واتساب الحسابات عند إساءة الاستخدام.",
+   "fr": "Intégration non officielle : elle passe par une passerelle que tu lances sur cet ordinateur. À utiliser sur ton propre compte uniquement. WhatsApp peut restreindre un compte en cas d’abus.",
+   "bn": "অনানুষ্ঠানিক ইন্টিগ্রেশন: এটি এই কম্পিউটারে চালানো একটি গেটওয়ে দিয়ে কাজ করে। শুধু নিজের অ্যাকাউন্টে ব্যবহার করুন। অপব্যবহারে WhatsApp অ্যাকাউন্ট সীমিত করতে পারে।",
+   "pt-BR": "Integração não oficial: passa por um gateway que você executa neste computador. Use só na sua própria conta. O WhatsApp pode restringir contas em caso de abuso.",
+   "ru": "Неофициальная интеграция: работает через шлюз, запущенный на этом компьютере. Используйте только со своим аккаунтом. WhatsApp может ограничить аккаунт при злоупотреблении.",
+   "id": "Integrasi tidak resmi: berjalan lewat gateway yang kamu jalankan di komputer ini. Gunakan hanya di akunmu sendiri. WhatsApp bisa membatasi akun yang menyalahgunakannya."
+  },
+  "Coucou only talks to the gateway on this computer. Messages stay in memory, are never logged or saved, and are forgotten when Coucou quits. No photo or media is ever downloaded.": {
+   "zh-Hans": "Coucou 只与这台电脑上的网关通信。消息只保存在内存中，从不记录或保存，退出 Coucou 时即被清除。从不下载任何照片或媒体。",
+   "hi": "Coucou सिर्फ़ इस कंप्यूटर पर चल रहे गेटवे से बात करता है। संदेश मेमोरी में रहते हैं, कभी लॉग या सेव नहीं होते, और Coucou बंद होने पर भुला दिए जाते हैं। कोई फ़ोटो या मीडिया डाउनलोड नहीं होता।",
+   "es": "Coucou solo habla con la pasarela de este ordenador. Los mensajes se quedan en memoria, nunca se registran ni se guardan, y se olvidan al cerrar Coucou. Nunca se descarga ninguna foto ni archivo.",
+   "ar": "يتواصل Coucou فقط مع البوابة على هذا الكمبيوتر. تبقى الرسائل في الذاكرة، ولا تُسجَّل ولا تُحفَظ أبدًا، وتُنسى عند إغلاق Coucou. لا تُنزَّل أي صورة أو وسائط.",
+   "fr": "Coucou ne parle qu’à la passerelle sur cet ordinateur. Les messages restent en mémoire, ne sont jamais journalisés ni enregistrés, et sont oubliés quand Coucou quitte. Aucune photo ni aucun média n’est téléchargé.",
+   "bn": "Coucou শুধু এই কম্পিউটারের গেটওয়ের সঙ্গে কথা বলে। বার্তা মেমরিতে থাকে, কখনও লগ বা সেভ হয় না, এবং Coucou বন্ধ হলে মুছে যায়। কোনো ছবি বা মিডিয়া ডাউনলোড হয় না।",
+   "pt-BR": "O Coucou só fala com o gateway neste computador. As mensagens ficam na memória, nunca são registradas nem salvas e são esquecidas quando o Coucou fecha. Nenhuma foto ou mídia é baixada.",
+   "ru": "Coucou общается только со шлюзом на этом компьютере. Сообщения хранятся в памяти, никогда не пишутся в журнал и не сохраняются, и забываются при выходе из Coucou. Фото и медиа не загружаются.",
+   "id": "Coucou hanya berbicara dengan gateway di komputer ini. Pesan tetap di memori, tidak pernah dicatat atau disimpan, dan dilupakan saat Coucou ditutup. Tidak ada foto atau media yang diunduh."
+  },
+  "Coucou runs it on this computer only (127.0.0.1, the URL’s port), without downloading media, and stops it when Coucou quits. Its WhatsApp session stays in {0}.": {
+   "zh-Hans": "Coucou 仅在这台电脑上运行它（127.0.0.1，使用地址中的端口），不下载媒体，并在 Coucou 退出时停止它。其 WhatsApp 会话保存在 {0}。",
+   "hi": "Coucou इसे सिर्फ़ इस कंप्यूटर पर चलाता है (127.0.0.1, URL का पोर्ट), मीडिया डाउनलोड किए बिना, और Coucou बंद होने पर रोक देता है। इसका WhatsApp सेशन {0} में रहता है।",
+   "es": "Coucou lo ejecuta solo en este ordenador (127.0.0.1, el puerto de la URL), sin descargar archivos, y lo detiene al cerrar Coucou. Su sesión de WhatsApp queda en {0}.",
+   "ar": "يشغّله Coucou على هذا الكمبيوتر فقط (127.0.0.1، منفذ العنوان)، دون تنزيل الوسائط، ويوقفه عند إغلاق Coucou. تبقى جلسة واتساب في ‎{0}.",
+   "fr": "Coucou le lance sur cet ordinateur uniquement (127.0.0.1, le port de l’URL), sans télécharger les médias, et l’arrête quand Coucou quitte. Sa session WhatsApp reste dans {0}.",
+   "bn": "Coucou এটি শুধু এই কম্পিউটারে চালায় (127.0.0.1, URL-এর পোর্ট), মিডিয়া ডাউনলোড ছাড়াই, এবং Coucou বন্ধ হলে থামিয়ে দেয়। এর WhatsApp সেশন থাকে {0}-তে।",
+   "pt-BR": "O Coucou o executa só neste computador (127.0.0.1, a porta da URL), sem baixar mídias, e o encerra quando o Coucou fecha. A sessão do WhatsApp fica em {0}.",
+   "ru": "Coucou запускает его только на этом компьютере (127.0.0.1, порт из адреса), без загрузки медиа, и останавливает при выходе. Сессия WhatsApp хранится в {0}.",
+   "id": "Coucou menjalankannya hanya di komputer ini (127.0.0.1, port dari URL), tanpa mengunduh media, dan menghentikannya saat Coucou ditutup. Sesi WhatsApp-nya ada di {0}."
+  },
+  "No GOWA build for this computer was found on GitHub. Try again later, or set your own gateway under Advanced.": {
+   "zh-Hans": "GitHub 上没有适用于此电脑 的 GOWA 版本。请稍后重试，或在“高级”中设置你自己的网关。",
+   "hi": "GitHub पर इस कंप्यूटर के लिए GOWA नहीं मिला। बाद में फिर कोशिश करें, या एडवांस्ड में अपना गेटवे सेट करें।",
+   "es": "No hay ninguna versión de GOWA para este ordenador en GitHub. Inténtalo más tarde o configura tu propia pasarela en Avanzado.",
+   "ar": "لا يوجد إصدار من GOWA لهذا الكمبيوتر على GitHub. أعد المحاولة لاحقًا أو اضبط بوابتك في «متقدم».",
+   "fr": "Aucune version de GOWA pour cet ordinateur sur GitHub. Réessaie plus tard, ou configure ta propre passerelle dans Avancé.",
+   "bn": "GitHub-এ এই কম্পিউটারের জন্য GOWA পাওয়া যায়নি। পরে আবার চেষ্টা করুন, বা অ্যাডভান্সডে নিজের গেটওয়ে সেট করুন।",
+   "pt-BR": "Nenhuma versão do GOWA para este computador no GitHub. Tente mais tarde ou configure seu próprio gateway em Avançado.",
+   "ru": "На GitHub нет сборки GOWA для этого компьютера. Попробуйте позже или укажите свой шлюз в разделе «Дополнительно».",
+   "id": "Tidak ada versi GOWA untuk komputer ini di GitHub. Coba lagi nanti, atau atur gateway sendiri di Lanjutan."
   }
  }
 }

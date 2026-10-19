@@ -21,7 +21,11 @@ tauri-plugin-global-shortcut = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1", features = ["preserve_order"] }
 tokio = { version = "1", features = ["net", "io-util", "sync", "time", "rt", "macros"] }
-reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+# rustls-tls-native-roots: the system's certificate store as well, so a network that inspects TLS with its own
+# certificate (antivirus web shields, company proxies) does not break the WhatsApp installer's GitHub download.
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls", "rustls-tls-native-roots"] }
+# WhatsApp: unpacking GOWA's release zip (whatsapp/installer.rs). Deflate only; the crate is already in the tree.
+zip = { version = "2", default-features = false, features = ["deflate"] }
 # Phone link (phone_link/): a TLS server for the Android app, off unless the user
 # turns it on. Every crate here is justified in docs/ANDROID_LINK.md.
 rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"] }
@@ -83,6 +87,8 @@ windows = { version = "0.61", features = [
   "Win32_UI_WindowsAndMessaging",
   # Flow dictation's keyboard hook.
   "Win32_System_LibraryLoader",
+  # The WhatsApp gateway (GOWA) dies with Coucou: a Job Object kills it on close.
+  "Win32_System_JobObjects",
 ] }
 # The clipboard for Flow dictation, kept out of the clipboard history. MIT/Apache-2.0.
 arboard = { version = "3.6", default-features = false }

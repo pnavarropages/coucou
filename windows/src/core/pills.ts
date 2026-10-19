@@ -134,6 +134,10 @@ export const PILL_CATALOG: readonly PillDefinition[] = [
   // (src-tauri/src/spotify.rs).
   { id: "integration_spotify", name: "Spotify", color: "#1DB954", category: "service",
     subtitle: N_("Integration"), source: "n8n", support: "yes", connect: none },
+  // Your WhatsApp messages, through GOWA: an unofficial gateway that Coucou installs and starts on
+  // this PC (src-tauri/src/whatsapp). Linked by scanning a QR code in Settings.
+  { id: "integration_whatsapp", name: "WhatsApp", color: "#25D366", category: "service",
+    subtitle: N_("Integration"), source: "n8n", support: "yes", connect: none },
 ];
 
 /** The always-on pill unless the user picks another workspace tool. */

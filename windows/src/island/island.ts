@@ -162,6 +162,10 @@ export class Island {
       cancelDrop: () => this.discardDrop(),
       collapse: () => this.collapse(),
       foldApproval: () => this.foldApproval(),
+      // A reply being typed keeps the island open, as a pin (Ctrl+P) would; never over a waiting request.
+      hold: (on) => {
+        if (!State.pendingApproval) this.setPinned(on);
+      },
       setFocus: (id) => {
         State.setFocus(id);
         Sound.play("blip");

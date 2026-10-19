@@ -23,6 +23,8 @@ import { buildRecap } from "./recap";
 import { buildWardrobe } from "./wardrobe";
 import { buildSpotifyCard, buildSpotifyPill, type SpotifyPillHost } from "./spotify";
 import { SPOTIFY_ID } from "../core/spotify";
+import { buildWhatsAppCard } from "./whatsapp";
+import { WHATSAPP_ID } from "../core/whatsapp";
 import type { Outfit, OutfitSelection } from "../mochi/wardrobe";
 import { language, t, tl, type Msg } from "../i18n/i18n";
 import type { ViewCommand } from "../island/shortcuts";
@@ -48,6 +50,8 @@ export interface ViewActions {
   setVolume(v: number): void;
   setAutoClose(seconds: number): void;
   openSettingsWindow(): void;
+  /** Keeps the open island from folding while something is being typed, and lets it fold again. */
+  hold(on: boolean): void;
   blip(): void;
   /** Wardrobe click: keeps the outfit ("auto" and "none" included). */
   chooseOutfit(selection: OutfitSelection): void;
@@ -202,6 +206,8 @@ function buildOverview(actions: ViewActions): ViewHost {
   // runs on, and a slider being dragged must not be rebuilt under the pointer.
   const spotifyCard = buildSpotifyCard();
   let spotifyPill: SpotifyPillHost | null = null;
+  // WhatsApp's card is kept too: a reply being typed must not be rebuilt under the user's fingers.
+  const whatsappCard = buildWhatsAppCard({ openSettings: () => actions.openSettingsWindow(), hold: (on) => actions.hold(on) });
 
   const el = h("div", { class: "view overview" },
     h("div", { class: "left" }, left),
@@ -211,7 +217,7 @@ function buildOverview(actions: ViewActions): ViewHost {
   let pillIds = "";
   let detailOpen = false;
   let lastFocus: string | null = null;
-  let mode: "ticker" | "card" | "plan" | "diff" | "spotify" | null = null;
+  let mode: "ticker" | "card" | "plan" | "diff" | "spotify" | "whatsapp" | null = null;
   let cardKey = "";
   /** The list row highlighted at the last sync, to scroll only when it moves. */
   let shownSelection: number | null = null;
@@ -368,6 +374,15 @@ function buildOverview(actions: ViewActions): ViewHost {
           cardKey = "";
         }
         spotifyCard.sync();
+      } else if (task && task.id === WHATSAPP_ID) {
+        // Its own card for every state: the conversations, or why there are none.
+        if (mode !== "whatsapp") {
+          clear(leftBody);
+          leftBody.append(whatsappCard.el);
+          mode = "whatsapp";
+          cardKey = "";
+        }
+        whatsappCard.sync();
       } else if (task) {
         const info = State.integrations[task.id];
         const key = [
@@ -382,6 +397,9 @@ function buildOverview(actions: ViewActions): ViewHost {
           leftBody.append(renderIntegrationCard(task, hooks));
         }
       }
+
+      // Off screen (another pill, the island folded): an open conversation closes.
+      if (mode !== "whatsapp" || State.mode !== "expanded") whatsappCard.leave();
 
       jump.style.display = detailOpen || mode === "plan" || mode === "diff" ? "none" : "";
 

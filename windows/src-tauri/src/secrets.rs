@@ -58,7 +58,8 @@ pub fn present(key: &str) -> bool {
 
 // ── Entries only Rust reads and writes ───────────────────────────────────────
 //
-// The phone link's certificate, key and pairing token, and the relay's room, end-to-end key and access key.
+// The phone link's certificate, key and pairing token, the relay's room, end-to-end key and access key, and
+// WhatsApp's gateway credential and webhook secret.
 // They are not in KNOWN_KEYS
 // on purpose: the island has `secret_present` / `secret_set` / `secret_clear`
 // for those, and none of the three may be reachable from a webview.
@@ -71,6 +72,9 @@ pub const INTERNAL_KEYS: &[&str] = &[
     "phone-relay-room",
     "phone-relay-key",
     "phone-relay-access",
+    // WhatsApp: GOWA's basic auth (user:password, made by Coucou) and the webhook's signing secret.
+    "whatsapp-gowa-auth",
+    "whatsapp-webhook-secret",
 ];
 
 /// Whether the keystore would accept this key through `get_internal` / `set_internal`.
