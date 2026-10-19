@@ -23,8 +23,44 @@ use super::server::{self, MAX_LINE};
 
 const TOKEN: &str = "test-token-0123456789abcdef";
 
-fn block_on<F: Future>(f: F) -> F::Output {
+/// Runs one end-to-end test. These tests pin the certificate of a real TLS server on loopback, like the
+/// phone does. On a computer where an antivirus scans web traffic (Norton "Web/Mail Shield", Kaspersky,
+/// ESET...) loopback TLS comes back re-signed with the antivirus' own certificate, and the pin refuses it
+/// every time: that is the pin working, not a bug. Detected once with a probe, those tests are skipped
+/// there, with a notice, instead of failing; COUCOU_FORCE_LOOPBACK_TLS=1 runs them anyway (after the
+/// owner excluded the test program from the scan).
+fn block_on<F: Future>(f: F) -> F::Output
+where
+    F::Output: Default,
+{
+    if loopback_tls_is_rewritten() {
+        return Default::default();
+    }
     tokio::runtime::Builder::new_current_thread().enable_all().build().unwrap().block_on(f)
+}
+
+/// True when a TLS server on loopback shows the client another certificate than its own.
+fn loopback_tls_is_rewritten() -> bool {
+    static REWRITTEN: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+    *REWRITTEN.get_or_init(|| {
+        if std::env::var("COUCOU_FORCE_LOOPBACK_TLS").is_ok_and(|v| v == "1") {
+            return false;
+        }
+        let rewritten = tokio::runtime::Builder::new_current_thread().enable_all().build().unwrap().block_on(async {
+            let rig = Rig::start().await;
+            matches!(Client::connect(rig.port, &rig.fingerprint).await, Err(e) if e.contains("certificate does not match the pairing"))
+        });
+        if rewritten {
+            // Straight to stderr: the test harness swallows an eprintln! of a test that passes.
+            use std::io::Write;
+            let _ = writeln!(
+                std::io::stderr(),
+                "phone_link end-to-end tests SKIPPED: this computer rewrites TLS on loopback (antivirus web shield). \
+                 Exclude the test program from the scan, or set COUCOU_FORCE_LOOPBACK_TLS=1 to run them anyway."
+            );
+        }
+        rewritten
+    })
 }
 
 #[derive(Default)]

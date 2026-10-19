@@ -400,6 +400,7 @@ mod tests {
     use crate::net::tests::serve_once;
 
     fn block_on<T>(f: impl std::future::Future<Output = T>) -> T {
+        let _turn = crate::net::tests::loopback_turn();
         tokio::runtime::Builder::new_current_thread().enable_all().build().unwrap().block_on(f)
     }
 
