@@ -4350,6 +4350,226 @@
    "pt-BR": "O Coucou não conseguiu responder: verifique sua chave do Claude em Notch → Chat.",
    "ru": "Coucou не смог ответить: проверьте ключ Claude в Notch → Чат.",
    "id": "Coucou tidak bisa menjawab: periksa kunci Claude-mu di Notch → Obrolan."
+  },
+  "Invalid API token (401)": {
+   "zh-Hans": "API 令牌无效 (401)",
+   "hi": "API टोकन अमान्य है (401)",
+   "es": "Token de API no válido (401)",
+   "ar": "رمز API غير صالح (401)",
+   "fr": "Jeton d'API invalide (401)",
+   "bn": "API টোকেন অবৈধ (401)",
+   "pt-BR": "Token de API inválido (401)",
+   "ru": "Недействительный токен API (401)",
+   "id": "Token API tidak valid (401)"
+  },
+  "The token needs the permission: {permission}": {
+   "zh-Hans": "该令牌需要权限：{permission}",
+   "hi": "टोकन को यह अनुमति चाहिए: {permission}",
+   "es": "El token necesita el permiso: {permission}",
+   "ar": "يحتاج الرمز إلى الصلاحية: {permission}",
+   "fr": "Le jeton a besoin de la permission : {permission}",
+   "bn": "টোকেনের এই অনুমতি দরকার: {permission}",
+   "pt-BR": "O token precisa da permissão: {permission}",
+   "ru": "Токену нужно разрешение: {permission}",
+   "id": "Token membutuhkan izin: {permission}"
+  },
+  "Add the Cloudflare account ID in Settings.": {
+   "zh-Hans": "请在设置中填写 Cloudflare 账户 ID。",
+   "hi": "सेटिंग्स में Cloudflare अकाउंट ID जोड़ें।",
+   "es": "Añade el ID de cuenta de Cloudflare en Ajustes.",
+   "ar": "أضف معرّف حساب Cloudflare في الإعدادات.",
+   "fr": "Ajoute l'ID de compte Cloudflare dans les réglages.",
+   "bn": "সেটিংসে Cloudflare অ্যাকাউন্ট ID যোগ করুন।",
+   "pt-BR": "Adicione o ID da conta do Cloudflare nos Ajustes.",
+   "ru": "Укажите ID аккаунта Cloudflare в настройках.",
+   "id": "Tambahkan ID akun Cloudflare di Pengaturan."
+  },
+  "Hetzner is limiting requests. Try again in a while.": {
+   "zh-Hans": "Hetzner 正在限制请求，请稍后再试。",
+   "hi": "Hetzner अनुरोधों को सीमित कर रहा है। कुछ देर बाद फिर कोशिश करें।",
+   "es": "Hetzner está limitando las peticiones. Inténtalo de nuevo en un rato.",
+   "ar": "تقيّد Hetzner عدد الطلبات. حاول مرة أخرى بعد قليل.",
+   "fr": "Hetzner limite les requêtes. Réessaie dans un moment.",
+   "bn": "Hetzner অনুরোধ সীমিত করছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।",
+   "pt-BR": "O Hetzner está limitando as requisições. Tente de novo daqui a pouco.",
+   "ru": "Hetzner ограничивает запросы. Повторите попытку чуть позже.",
+   "id": "Hetzner membatasi permintaan. Coba lagi beberapa saat lagi."
+  },
+  "Set the workspace ID in Settings → Claude.": {
+   "zh-Hans": "请在 设置 → Claude 中填写工作区 ID。",
+   "hi": "सेटिंग्स → Claude में वर्कस्पेस ID डालें।",
+   "es": "Indica el ID del workspace en Ajustes → Claude.",
+   "ar": "أدخل معرّف مساحة العمل في الإعدادات ← Claude.",
+   "fr": "Renseigne l'ID du workspace dans Réglages → Claude.",
+   "bn": "সেটিংস → Claude-এ ওয়ার্কস্পেস ID দিন।",
+   "pt-BR": "Informe o ID do workspace em Ajustes → Claude.",
+   "ru": "Укажите ID рабочего пространства в Настройки → Claude.",
+   "id": "Isi ID workspace di Pengaturan → Claude."
+  },
+  "Errors: {n}": {
+   "zh-Hans": "错误：{n}",
+   "hi": "त्रुटियाँ: {n}",
+   "es": "Errores: {n}",
+   "ar": "الأخطاء: {n}",
+   "fr": "Erreurs : {n}",
+   "bn": "ত্রুটি: {n}",
+   "pt-BR": "Erros: {n}",
+   "ru": "Ошибки: {n}",
+   "id": "Error: {n}"
+  },
+  "Errors in the last 24 hours": {
+   "zh-Hans": "过去 24 小时的错误",
+   "hi": "पिछले 24 घंटों की त्रुटियाँ",
+   "es": "Errores en las últimas 24 horas",
+   "ar": "الأخطاء في آخر 24 ساعة",
+   "fr": "Erreurs des dernières 24 heures",
+   "bn": "গত ২৪ ঘণ্টার ত্রুটি",
+   "pt-BR": "Erros nas últimas 24 horas",
+   "ru": "Ошибки за последние 24 часа",
+   "id": "Error dalam 24 jam terakhir"
+  },
+  "No Workers yet": {
+   "zh-Hans": "还没有 Worker",
+   "hi": "अभी कोई Worker नहीं",
+   "es": "Aún no hay Workers",
+   "ar": "لا توجد Workers بعد",
+   "fr": "Aucun Worker pour l'instant",
+   "bn": "এখনও কোনো Worker নেই",
+   "pt-BR": "Ainda não há Workers",
+   "ru": "Workers пока нет",
+   "id": "Belum ada Worker"
+  },
+  "Domains: {active}/{total} active": {
+   "zh-Hans": "域名：{active}/{total} 个已激活",
+   "hi": "डोमेन: {active}/{total} सक्रिय",
+   "es": "Dominios: {active}/{total} activos",
+   "ar": "النطاقات: {active}/{total} نشطة",
+   "fr": "Domaines : {active}/{total} actifs",
+   "bn": "ডোমেইন: {active}/{total} সক্রিয়",
+   "pt-BR": "Domínios: {active}/{total} ativos",
+   "ru": "Домены: активны {active} из {total}",
+   "id": "Domain: {active}/{total} aktif"
+  },
+  "Workers": {
+   "zh-Hans": "Workers",
+   "hi": "Workers",
+   "es": "Workers",
+   "ar": "Workers",
+   "fr": "Workers",
+   "bn": "Workers",
+   "pt-BR": "Workers",
+   "ru": "Workers",
+   "id": "Workers"
+  },
+  "Servers": {
+   "zh-Hans": "服务器",
+   "hi": "सर्वर",
+   "es": "Servidores",
+   "ar": "الخوادم",
+   "fr": "Serveurs",
+   "bn": "সার্ভার",
+   "pt-BR": "Servidores",
+   "ru": "Серверы",
+   "id": "Server"
+  },
+  "CPU {n}%": {
+   "zh-Hans": "CPU {n}%",
+   "hi": "CPU {n}%",
+   "es": "CPU {n}%",
+   "ar": "CPU {n}%",
+   "fr": "CPU {n}%",
+   "bn": "CPU {n}%",
+   "pt-BR": "CPU {n}%",
+   "ru": "CPU {n}%",
+   "id": "CPU {n}%"
+  },
+  "No servers yet": {
+   "zh-Hans": "还没有服务器",
+   "hi": "अभी कोई सर्वर नहीं",
+   "es": "Aún no hay servidores",
+   "ar": "لا توجد خوادم بعد",
+   "fr": "Aucun serveur pour l'instant",
+   "bn": "এখনও কোনো সার্ভার নেই",
+   "pt-BR": "Ainda não há servidores",
+   "ru": "Серверов пока нет",
+   "id": "Belum ada server"
+  },
+  "Running: {running}/{total}": {
+   "zh-Hans": "运行中：{running}/{total}",
+   "hi": "चल रहे: {running}/{total}",
+   "es": "En marcha: {running}/{total}",
+   "ar": "قيد التشغيل: {running}/{total}",
+   "fr": "En marche : {running}/{total}",
+   "bn": "চালু: {running}/{total}",
+   "pt-BR": "Em execução: {running}/{total}",
+   "ru": "Работают: {running} из {total}",
+   "id": "Berjalan: {running}/{total}"
+  },
+  "API token": {
+   "zh-Hans": "API 令牌",
+   "hi": "API टोकन",
+   "es": "Token de API",
+   "ar": "رمز API",
+   "fr": "Jeton d'API",
+   "bn": "API টোকেন",
+   "pt-BR": "Token de API",
+   "ru": "Токен API",
+   "id": "Token API"
+  },
+  "Account ID (optional)": {
+   "zh-Hans": "账户 ID（可选）",
+   "hi": "अकाउंट ID (वैकल्पिक)",
+   "es": "ID de cuenta (opcional)",
+   "ar": "معرّف الحساب (اختياري)",
+   "fr": "ID de compte (facultatif)",
+   "bn": "অ্যাকাউন্ট ID (ঐচ্ছিক)",
+   "pt-BR": "ID da conta (opcional)",
+   "ru": "ID аккаунта (необязательно)",
+   "id": "ID akun (opsional)"
+  },
+  "Read-only. Create a custom token with Account > Workers Scripts > Read, Zone > Zone > Read and, to see errors, Account > Account Analytics > Read. Without the account ID, Coucou finds it from your domains.": {
+   "zh-Hans": "只读。创建自定义令牌，权限为 Account > Workers Scripts > Read、Zone > Zone > Read，若要查看错误，再加 Account > Account Analytics > Read。未填写账户 ID 时，Coucou 会根据你的域名自动查找。",
+   "hi": "केवल पढ़ने के लिए। Account > Workers Scripts > Read, Zone > Zone > Read और त्रुटियाँ देखने के लिए Account > Account Analytics > Read अनुमतियों वाला कस्टम टोकन बनाएँ। अकाउंट ID न दें तो Coucou उसे आपके डोमेन से ढूँढ लेता है।",
+   "es": "Solo lectura. Crea un token personalizado con Account > Workers Scripts > Read, Zone > Zone > Read y, para ver errores, Account > Account Analytics > Read. Sin el ID de cuenta, Coucou lo deduce de tus dominios.",
+   "ar": "للقراءة فقط. أنشئ رمزًا مخصصًا بالصلاحيات Account > Workers Scripts > Read وZone > Zone > Read ولعرض الأخطاء Account > Account Analytics > Read. إن لم تُدخل معرّف الحساب، يستنتجه Coucou من نطاقاتك.",
+   "fr": "Lecture seule. Crée un jeton personnalisé avec Account > Workers Scripts > Read, Zone > Zone > Read et, pour voir les erreurs, Account > Account Analytics > Read. Sans l'ID de compte, Coucou le déduit de tes domaines.",
+   "bn": "শুধু পড়ার জন্য। Account > Workers Scripts > Read, Zone > Zone > Read এবং ত্রুটি দেখতে Account > Account Analytics > Read অনুমতিসহ একটি কাস্টম টোকেন বানান। অ্যাকাউন্ট ID না দিলে Coucou আপনার ডোমেইন থেকে সেটি খুঁজে নেয়।",
+   "pt-BR": "Somente leitura. Crie um token personalizado com Account > Workers Scripts > Read, Zone > Zone > Read e, para ver os erros, Account > Account Analytics > Read. Sem o ID da conta, o Coucou o descobre pelos seus domínios.",
+   "ru": "Только чтение. Создайте пользовательский токен с правами Account > Workers Scripts > Read, Zone > Zone > Read и, чтобы видеть ошибки, Account > Account Analytics > Read. Если не указать ID аккаунта, Coucou определит его по вашим доменам.",
+   "id": "Hanya baca. Buat token kustom dengan izin Account > Workers Scripts > Read, Zone > Zone > Read dan, untuk melihat error, Account > Account Analytics > Read. Tanpa ID akun, Coucou mencarinya dari domain Anda."
+  },
+  "Read-only. In your Hetzner Cloud project: Security > API tokens, with the Read permission. Coucou never creates, stops or deletes anything.": {
+   "zh-Hans": "只读。在 Hetzner Cloud 项目中：Security > API tokens，权限选 Read。Coucou 不会创建、停止或删除任何内容。",
+   "hi": "केवल पढ़ने के लिए। अपने Hetzner Cloud प्रोजेक्ट में: Security > API tokens, Read अनुमति के साथ। Coucou कभी कुछ बनाता, रोकता या हटाता नहीं है।",
+   "es": "Solo lectura. En tu proyecto de Hetzner Cloud: Security > API tokens, con el permiso Read. Coucou nunca crea, detiene ni elimina nada.",
+   "ar": "للقراءة فقط. في مشروع Hetzner Cloud الخاص بك: Security > API tokens مع صلاحية Read. لا ينشئ Coucou أو يوقف أو يحذف أي شيء أبدًا.",
+   "fr": "Lecture seule. Dans ton projet Hetzner Cloud : Security > API tokens, avec la permission Read. Coucou ne crée, n'arrête et ne supprime jamais rien.",
+   "bn": "শুধু পড়ার জন্য। আপনার Hetzner Cloud প্রজেক্টে: Security > API tokens, Read অনুমতিসহ। Coucou কখনো কিছু তৈরি, বন্ধ বা মুছে না।",
+   "pt-BR": "Somente leitura. No seu projeto do Hetzner Cloud: Security > API tokens, com a permissão Read. O Coucou nunca cria, para nem exclui nada.",
+   "ru": "Только чтение. В вашем проекте Hetzner Cloud: Security > API tokens, право Read. Coucou ничего не создаёт, не останавливает и не удаляет.",
+   "id": "Hanya baca. Di proyek Hetzner Cloud Anda: Security > API tokens, dengan izin Read. Coucou tidak pernah membuat, menghentikan, atau menghapus apa pun."
+  },
+  "Workspace ID (optional)": {
+   "zh-Hans": "工作区 ID（可选）",
+   "hi": "वर्कस्पेस ID (वैकल्पिक)",
+   "es": "ID del workspace (opcional)",
+   "ar": "معرّف مساحة العمل (اختياري)",
+   "fr": "ID du workspace (facultatif)",
+   "bn": "ওয়ার্কস্পেস ID (ঐচ্ছিক)",
+   "pt-BR": "ID do workspace (opcional)",
+   "ru": "ID рабочего пространства (необязательно)",
+   "id": "ID workspace (opsional)"
+  },
+  "Only for organization API keys that are not scoped to a workspace: Anthropic then asks for this ID. Find it in the Console under Workspaces. Leave empty and Save to remove it.": {
+   "zh-Hans": "仅适用于未限定到某个工作区的组织 API 密钥：此时 Anthropic 会要求提供该 ID。可在 Console 的 Workspaces 中找到。留空并点击“保存”即可删除。",
+   "hi": "केवल उन ऑर्गनाइज़ेशन API कुंजियों के लिए जो किसी वर्कस्पेस तक सीमित नहीं हैं: तब Anthropic यह ID माँगता है। इसे Console में Workspaces के अंतर्गत पाएँ। हटाने के लिए खाली छोड़कर “सहेजें” दबाएँ।",
+   "es": "Solo para claves de API de organización sin workspace asignado: Anthropic pide entonces este ID. Lo encuentras en la Console, en Workspaces. Déjalo vacío y pulsa «Guardar» para quitarlo.",
+   "ar": "للمفاتيح التنظيمية غير المرتبطة بمساحة عمل: يطلب Anthropic حينها هذا المعرّف. ستجده في Console ضمن Workspaces. اتركه فارغًا واضغط «حفظ» لإزالته.",
+   "fr": "Seulement pour les clés d'API d'organisation sans workspace : Anthropic réclame alors cet ID. Il se trouve dans la Console, sous Workspaces. Laisse vide et clique sur « Enregistrer » pour le retirer.",
+   "bn": "শুধু সেই সংস্থা-স্তরের API কী-র জন্য যা কোনো ওয়ার্কস্পেসে সীমাবদ্ধ নয়: তখন Anthropic এই ID চায়। এটি Console-এর Workspaces-এ পাবেন। সরাতে ফাঁকা রেখে “সংরক্ষণ” চাপুন।",
+   "pt-BR": "Só para chaves de API de organização sem workspace definido: a Anthropic pede então este ID. Ele fica no Console, em Workspaces. Deixe vazio e clique em «Salvar» para remover.",
+   "ru": "Только для API-ключей организации, не привязанных к рабочему пространству: тогда Anthropic запрашивает этот ID. Его можно найти в Console в разделе Workspaces. Чтобы удалить, оставьте поле пустым и нажмите «Сохранить».",
+   "id": "Hanya untuk kunci API organisasi yang tidak terikat ke workspace: Anthropic lalu meminta ID ini. Temukan di Console pada Workspaces. Kosongkan lalu tekan “Simpan” untuk menghapusnya."
   }
  }
 }

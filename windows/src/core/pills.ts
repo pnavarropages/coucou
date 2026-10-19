@@ -134,6 +134,13 @@ export const PILL_CATALOG: readonly PillDefinition[] = [
   // (src-tauri/src/spotify.rs).
   { id: "integration_spotify", name: "Spotify", color: "#1DB954", category: "service",
     subtitle: N_("Integration"), source: "n8n", support: "yes", connect: none },
+  // ── Only on Windows and Linux (after the Mac's list, which they never reorder) ──
+  // Read-only dashboards: Cloudflare Workers and domains, Hetzner Cloud servers
+  // (src-tauri/src/cloudflare.rs, hetzner.rs).
+  { id: "integration_cloudflare", name: "Cloudflare", color: "#F6821F", category: "service",
+    subtitle: N_("Integration"), source: "n8n", support: "yes", connect: key("cloudflare-api-token") },
+  { id: "integration_hetzner", name: "Hetzner", color: "#D50C2D", category: "service",
+    subtitle: N_("Integration"), source: "n8n", support: "yes", connect: key("hetzner-api-token") },
 ];
 
 /** The always-on pill unless the user picks another workspace tool. */

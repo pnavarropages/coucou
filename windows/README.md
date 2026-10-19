@@ -303,6 +303,30 @@ minute while a CI is running, and as soon as you open the card on data older
 than a minute; contributions every 30 minutes. Nothing is fetched while the pill
 is off or Coucou is paused.
 
+## Cloudflare and Hetzner (read only)
+
+Two more service pills, Windows and Linux only. Both are **read only**: Coucou
+never creates, changes, restarts or deletes anything in either account. Tokens
+live in the credential store like every other key; turn the pill on in
+**Settings… → Integrations**.
+
+- **Cloudflare**: the Workers of the account (the time of the last deployment,
+  and the errors of the last 24 hours) and the state of the domains (active,
+  pending, paused). Create a *custom API token* in the Cloudflare dashboard
+  (My Profile → API Tokens) with **Account › Workers Scripts › Read**,
+  **Zone › Zone › Read** and, to see errors, **Account › Account Analytics ›
+  Read**. The account ID is optional: without it Coucou takes it from your
+  domains. A part the token cannot read says which permission is missing, and
+  the rest of the card still shows. Every request is a GET except one: the
+  errors of the last 24 hours exist only in Cloudflare's GraphQL Analytics
+  API, which takes a POST; the query is fixed and read only. The card is
+  refreshed every 5 minutes, and a new deployment gives a badge.
+- **Hetzner Cloud**: the servers of one project with their state (running,
+  off…), public address and, for the running ones, the CPU and network use of
+  the last minutes. Create a token in the project (Security → API tokens) with
+  the **Read** permission. Refreshed every 2 minutes; a server that goes off,
+  or comes back, gives a badge and a sound.
+
 ## Build it yourself
 
 You need [Rust](https://rustup.rs), [Node 20+](https://nodejs.org), and the
@@ -315,6 +339,15 @@ npm install
 npm run tauri dev      # live-reloading development build
 npm run pack           # builds the installer and drops it in windows/release/
 ```
+
+`cargo test` runs the Rust tests. On a computer whose antivirus scans web traffic
+on this machine's own loopback (Norton Web/Mail Shield, and similar), two things
+go wrong that are not bugs: it re-signs the TLS of the phone-link tests with its
+own certificate, which the tests' certificate pin rightly refuses, and it holds
+back loopback connections when many are open at once. The TLS end-to-end tests
+of `phone_link` detect the first and skip themselves with a notice (set
+`COUCOU_FORCE_LOOPBACK_TLS=1` to run them anyway once the antivirus excludes the
+test program), and tests that open several connections take turns.
 
 `npm run dev` alone serves the front end in an ordinary browser, which is enough
 to work on the island's looks. It also serves `dev/upload-preview.html`, which
