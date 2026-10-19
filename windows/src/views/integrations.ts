@@ -56,6 +56,8 @@ const OPEN_URLS: Record<string, string> = {
   integration_stripe: "https://dashboard.stripe.com/payments",
   integration_notion: "https://notion.so",
   integration_calcom: "https://app.cal.com/bookings",
+  integration_cloudflare: "https://dash.cloudflare.com",
+  integration_hetzner: "https://console.hetzner.cloud",
 };
 
 /** IntegrationCardView.statusLabel on macOS. */
@@ -429,6 +431,98 @@ function n8nDetail(task: AgentTask, onBack: () => void): HTMLElement {
   );
 }
 
+// ── Cloudflare and Hetzner (read only) ────────────────────────────────────────
+
+const CLOUDFLARE = "integration_cloudflare";
+const HETZNER = "integration_hetzner";
+const RED = "#F4505E";
+const GREEN = "#22C55E";
+const AMBER = "#F5A524";
+
+/** A line under the rows, in the card's small grey (red when it says what went wrong). */
+function note(text: string, problem = false): HTMLElement {
+  const el = h("div", { class: "int-sub", text });
+  el.style.padding = "3px 8px 0";
+  if (problem) el.style.color = RED;
+  return el;
+}
+
+/** Bytes per second as a short rate: 512 B/s, 2.0 KB/s, 1.5 MB/s. */
+export function formatRate(bytesPerSecond: number): string {
+  if (!Number.isFinite(bytesPerSecond) || bytesPerSecond < 0) return "";
+  if (bytesPerSecond < 1024) return `${Math.round(bytesPerSecond)} B/s`;
+  if (bytesPerSecond < 1024 * 1024) return `${(bytesPerSecond / 1024).toFixed(1)} KB/s`;
+  return `${(bytesPerSecond / (1024 * 1024)).toFixed(1)} MB/s`;
+}
+
+function num(value: unknown): number | null {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function cloudflareCard(): HTMLElement {
+  const workers = arr(CLOUDFLARE, "workers");
+  const zones = arr(CLOUDFLARE, "zones");
+  const d = get(CLOUDFLARE);
+  const rows = h("div", { class: "int-rows" });
+  workers.slice(0, 3).forEach((w, i) => {
+    const errors = num(w.errors) ?? 0;
+    const accent = errors > 0 ? RED : GREEN;
+    const children: Node[] = [h("span", { class: "int-name", text: String(w.name ?? "") })];
+    if (errors > 0) {
+      const badge = h("span", { class: "int-ago", text: t("Errors: {n}", { n: errors }), title: t("Errors in the last 24 hours") });
+      badge.style.color = RED;
+      children.push(badge);
+    }
+    children.push(h("span", { class: "int-ago", text: timeAgo(w.deployedAt) }));
+    rows.append(listRow(accent, i === 0, ...children));
+  });
+  if (workers.length === 0 && !d.workersError) rows.append(note(t("No Workers yet")));
+  if (typeof d.workersError === "string") rows.append(note(d.workersError, true));
+  if (typeof d.analyticsError === "string" && workers.length > 0) rows.append(note(d.analyticsError, true));
+
+  if (typeof d.zonesError === "string") {
+    rows.append(note(d.zonesError, true));
+  } else if (zones.length > 0) {
+    const active = zones.filter((z) => z.status === "active" && z.paused !== true).length;
+    const line = note(t("Domains: {active}/{total} active", { active, total: zones.length }), active < zones.length);
+    const odd = zones.filter((z) => z.status !== "active" || z.paused === true).map((z) => String(z.name ?? ""));
+    if (odd.length > 0) line.title = odd.join(", ");
+    rows.append(line);
+  }
+  return h("div", { class: "int-card" }, header("#F6821F", "Cloudflare", t("Workers")), rows);
+}
+
+function hetznerCard(): HTMLElement {
+  const servers = arr(HETZNER, "servers");
+  const d = get(HETZNER);
+  const rows = h("div", { class: "int-rows" });
+  servers.slice(0, 4).forEach((s, i) => {
+    const status = String(s.status ?? "unknown");
+    const accent = status === "running" ? GREEN : status === "off" ? RED : AMBER;
+    const cpu = num(s.cpu);
+    const label = status === "off" ? t("Off") : status !== "running" ? status : cpu != null ? t("CPU {n}%", { n: Math.round(cpu) }) : "";
+    const row = listRow(
+      accent,
+      i === 0,
+      h("span", { class: "int-name", text: String(s.name ?? "") }),
+      h("span", { class: "int-ago", text: label }),
+    );
+    const tip = [s.ip, s.type, s.location].filter((x) => typeof x === "string" && x).join(" · ");
+    if (tip) row.title = tip;
+    rows.append(row);
+  });
+  if (servers.length === 0) rows.append(note(t("No servers yet")));
+  else {
+    const running = num(d.running) ?? 0;
+    const total = num(d.total) ?? servers.length;
+    const sum = (key: string) => servers.reduce((acc, s) => acc + (num(s[key]) ?? 0), 0);
+    const rate = servers.some((s) => num(s.netIn) != null) ? ` · ↓ ${formatRate(sum("netIn"))} ↑ ${formatRate(sum("netOut"))}` : "";
+    rows.append(note(t("Running: {running}/{total}", { running, total }) + rate, running < total));
+  }
+  if (typeof d.metricsError === "string") rows.append(note(d.metricsError, true));
+  return h("div", { class: "int-card" }, header("#D50C2D", "Hetzner", t("Servers")), rows);
+}
+
 // ── Dispatch ──────────────────────────────────────────────────────────────────
 
 export interface IntegrationCardHooks {
@@ -457,6 +551,9 @@ export function hasIntegrationData(id: string): boolean {
     case "integration_notion":
       return arr(id, "pages").length > 0;
     case "integration_calcom":
+      return info.loaded;
+    case "integration_cloudflare":
+    case "integration_hetzner":
       return info.loaded;
     default:
       return false;
@@ -512,6 +609,10 @@ export function renderIntegrationCard(task: AgentTask, hooks: IntegrationCardHoo
       return notionCard();
     case "integration_calcom":
       return calcomCard();
+    case "integration_cloudflare":
+      return cloudflareCard();
+    case "integration_hetzner":
+      return hetznerCard();
     default:
       return idleCard(task, hooks.openSettings);
   }

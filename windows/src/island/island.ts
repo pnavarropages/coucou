@@ -198,6 +198,8 @@ export class Island {
           integration_calcom: "https://app.cal.com/bookings",
           // No WhatsApp app to bring forward here as on the Mac: WhatsApp Web, in the browser.
           integration_whatsapp: "https://web.whatsapp.com",
+          integration_cloudflare: "https://dash.cloudflare.com",
+          integration_hetzner: "https://console.hetzner.cloud",
         };
         if (task.id === CLAUDE_DESKTOP_ID) void Bridge.openClaudeDesktop();
         else if (task.id === "integration_claude" || task.sessionId) {

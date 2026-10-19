@@ -47,10 +47,21 @@ test("the catalog holds the Mac's pills with the Claude Code label for Windows a
     ["integration_spotify", "Spotify", "#1DB954", "service", "Integration"],
     ["integration_whatsapp", "WhatsApp", "#25D366", "service", "Integration"],
   ];
+  // The Mac's list, in the Mac's order, then what only Windows and Linux have.
   assert.deepEqual(
-    PILL_CATALOG.filter((p) => !["integration_gitlab", "integration_gitea"].includes(p.id))
+    PILL_CATALOG.filter((p) => ![
+      "integration_gitlab", "integration_gitea", "integration_cloudflare", "integration_hetzner",
+    ].includes(p.id))
       .map((p) => [p.id, p.name, p.color, p.category, p.subtitle]),
     mac,
+  );
+  assert.deepEqual(
+    PILL_CATALOG.filter((p) => ["integration_cloudflare", "integration_hetzner"].includes(p.id))
+      .map((p) => [p.id, p.name, p.color, p.category, p.subtitle]),
+    [
+      ["integration_cloudflare", "Cloudflare", "#F6821F", "service", "Integration"],
+      ["integration_hetzner", "Hetzner", "#D50C2D", "service", "Integration"],
+    ],
   );
   assert.deepEqual(PILL_CATEGORIES.map((c) => c.title), [
     "Where you code", "Agents", "AI for the chat", "Services",
@@ -113,6 +124,18 @@ test("this build leaves out what only macOS has, and Claude Desktop on Linux", (
   assert.ok(linux.includes("integration_spotify"));
   assert.ok(windows.includes("integration_spotify"));
   assert.deepEqual(linux, windows.filter((id) => id !== "agent_claude-desktop"));
+});
+
+test("Cloudflare and Hetzner: read-only services on both systems, connected by their token", () => {
+  for (const [id, key] of [["integration_cloudflare", "cloudflare-api-token"], ["integration_hetzner", "hetzner-api-token"]]) {
+    const def = pillDefinition(id);
+    assert.equal(def.support, "yes");
+    assert.deepEqual(def.connect, { kind: "key", key });
+    assert.equal(def.category, "service");
+    assert.ok(availablePills("windows").some((p) => p.id === id));
+    assert.ok(availablePills("linux").some((p) => p.id === id));
+    assert.ok(!mainPillChoices("windows").some((p) => p.id === id));
+  }
 });
 
 test("Spotify: a service on both systems with nothing to set up", () => {

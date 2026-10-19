@@ -411,6 +411,45 @@ function apiSection(hasKey: boolean, relay: boolean): HTMLElement {
   const dot = statusDot(hasKey || relay);
   const state = h("span", { class: "hint", text: apiState(hasKey, relay) });
 
+/**
+ * The optional Anthropic workspace ID. Organization keys that are not scoped to a workspace are refused
+ * until every request names one (header anthropic-workspace-id, sent by src-tauri/src/claude.rs).
+ */
+function workspaceRow(): HTMLElement {
+  const KEY = "anthropic-workspace-id";
+  const input = h("input", {
+    type: "text",
+    placeholder: "wrkspc_…",
+    style: "flex:1 1 auto;min-width:0",
+    autocomplete: "off",
+    spellcheck: "false",
+  }) as HTMLInputElement;
+  const saveBtn = h("button", { text: t("Save") });
+  const dotEl = statusDot(false);
+  const refresh = async () => {
+    const present = (await Bridge.secretPresent(KEY)) ?? false;
+    dotEl.style.background = present ? "#22c55e" : "#6b7079";
+    input.placeholder = present ? CHAT_STRINGS.stored : "wrkspc_…";
+  };
+  saveBtn.addEventListener("click", async () => {
+    const value = input.value.trim();
+    try {
+      await Bridge.secretSet(KEY, value);
+      input.value = "";
+      await refresh();
+    } catch {
+      dotEl.style.background = "#f5a524";
+}
+  });
+  void refresh();
+  return h(
+    "div",
+    {},
+    h("div", { class: "row" }, h("label", { text: t("Workspace ID (optional)") }), input, saveBtn, dotEl),
+    h("div", { class: "hint", text: t("Only for organization API keys that are not scoped to a workspace: Anthropic then asks for this ID. Find it in the Console under Workspaces. Leave empty and Save to remove it.") }),
+  );
+}
+
   const field = h("input", {
     type: "password",
     placeholder: hasKey ? `••••••••••••  ${t("(stored)")}` : "sk-ant-...",
@@ -476,6 +515,7 @@ function apiSection(hasKey: boolean, relay: boolean): HTMLElement {
     h("h2", {}, dot, h("span", { text: "Claude" })),
     state,
     h("div", { class: "row" }, h("label", { text: t("API key") }), field, saveBtn, clearBtn),
+    workspaceRow(),
     h("div", { class: "row" }, h("label", { text: t("Model") }), model),
     feedback,
   );
@@ -855,6 +895,15 @@ const INTEGRATIONS: IntegrationDef[] = [
     ] },
   { id: "integration_vercel", name: "Vercel", color: "#7C5CFF",
     fields: [{ key: "vercel-token", label: N_("Token"), placeholder: "…", secret: true }] },
+  { id: "integration_cloudflare", name: "Cloudflare", color: "#F6821F",
+    fields: [
+      { key: "cloudflare-api-token", label: N_("API token"), placeholder: "…", secret: true },
+      { key: "cloudflare-account-id", label: N_("Account ID (optional)"), placeholder: "32 hex characters", secret: false },
+    ],
+    hint: N_("Read-only. Create a custom token with Account > Workers Scripts > Read, Zone > Zone > Read and, to see errors, Account > Account Analytics > Read. Without the account ID, Coucou finds it from your domains.") },
+  { id: "integration_hetzner", name: "Hetzner", color: "#D50C2D",
+    fields: [{ key: "hetzner-api-token", label: N_("API token"), placeholder: "…", secret: true }],
+    hint: N_("Read-only. In your Hetzner Cloud project: Security > API tokens, with the Read permission. Coucou never creates, stops or deletes anything.") },
   { id: "integration_n8n", name: "n8n", color: "#F29B38",
     fields: [
       { key: "n8n-url", label: N_("Instance URL"), placeholder: "https://n8n.example.com", secret: false },
@@ -1437,6 +1486,7 @@ async function render() {
   const keys = [
     "stripe-api-key", "github-token", "gitlab-url", "gitlab-token", "gitea-url", "gitea-token", "vercel-token",
     "n8n-url", "n8n-api-key", "resend-api-key", "notion-api-key", "calcom-api-key",
+    "cloudflare-api-token", "cloudflare-account-id", "hetzner-api-token",
   ];
   const present: Record<string, boolean> = {};
   for (const k of keys) present[k] = (await Bridge.secretPresent(k)) ?? false;

@@ -73,6 +73,8 @@ pub fn start(app: AppHandle) {
     spawn(app.clone(), "integration_gitea", 7, 300, poll_gitea);
     spawn_github_loops(app.clone());
     spawn(app.clone(), "integration_calcom", 8, 300, poll_calcom);
+    spawn(app.clone(), "integration_cloudflare", 10, 300, poll_cloudflare);
+    spawn(app.clone(), "integration_hetzner", 11, 120, poll_hetzner);
     spawn(app, "integration_notion", 9, 300, poll_notion);
 }
 
@@ -124,6 +126,8 @@ pub async fn poll_once(app: AppHandle, id: &str) {
         "integration_resend" => poll_resend(app).await,
         "integration_notion" => poll_notion(app).await,
         "integration_calcom" => poll_calcom(app).await,
+        "integration_cloudflare" => poll_cloudflare(app).await,
+        "integration_hetzner" => poll_hetzner(app).await,
         _ => {}
     }
 }
@@ -907,6 +911,39 @@ async fn poll_vercel(app: AppHandle) {
         error: None,
         event,
     });
+}
+
+// ── Cloudflare and Hetzner (read only; cloudflare.rs, hetzner.rs) ───────────────────
+
+async fn poll_cloudflare(app: AppHandle) {
+    let Some(token) = secrets::get(crate::cloudflare::TOKEN_KEY) else { return };
+    let account = secrets::get(crate::cloudflare::ACCOUNT_KEY);
+    let report = crate::cloudflare::poll(&client(), crate::cloudflare::API_BASE, &token, account.as_deref(), crate::net::now_secs()).await;
+    if let Some(error) = report.fatal {
+        emit(&app, IntegrationUpdate { id: "integration_cloudflare", data: json!({}), error: Some(error), event: None });
+        return;
+    }
+    // A deployment nobody had seen: a Worker was pushed.
+    let event = report.newest_deployment.and_then(|(change, worker)| {
+        is_new("cloudflare", &change).then_some(IntegrationEvent { success: true, label: worker, detail: None })
+    });
+    emit(&app, IntegrationUpdate { id: "integration_cloudflare", data: report.data, error: None, event });
+}
+
+async fn poll_hetzner(app: AppHandle) {
+    let Some(token) = secrets::get(crate::hetzner::TOKEN_KEY) else { return };
+    let report = crate::hetzner::poll(&client(), crate::hetzner::API_BASE, &token, crate::net::now_secs()).await;
+    if let Some(error) = report.fatal {
+        emit(&app, IntegrationUpdate { id: "integration_hetzner", data: json!({}), error: Some(error), event: None });
+        return;
+    }
+    // A server that went off is an alarm; one that came back is good news.
+    let event = crate::hetzner::status_changes(&report.states).into_iter().next().map(|(name, status)| IntegrationEvent {
+        success: status == "running",
+        label: name,
+        detail: Some(status),
+    });
+    emit(&app, IntegrationUpdate { id: "integration_hetzner", data: report.data, error: None, event });
 }
 
 // ── Resend ────────────────────────────────────────────────────────────────────

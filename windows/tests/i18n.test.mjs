@@ -459,6 +459,7 @@ const NOT_TEXT = new Set([
   "unknown", // a CI state
   "Resend", // the service's name (the Mac's "Resend" is a button: send again)
   "Stop", // Claude Code's hook event (the Mac's "Stop" is a button)
+  "running", // a Hetzner server's status in its API
 ]);
 
 test("no known user-facing English literal outside t() in the views and settings", () => {
