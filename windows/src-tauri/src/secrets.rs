@@ -8,6 +8,8 @@ const SERVICE: &str = "fr.louisraille.coucou";
 /// Every key Coucou may store. Anything outside this list is refused.
 pub const KNOWN_KEYS: &[&str] = &[
     "anthropic-api-key",
+    // Optional: organization keys not scoped to a workspace need its id.
+    "anthropic-workspace-id",
     "openai-api-key",
     "google-api-key",
     "openrouter-api-key",
@@ -24,6 +26,10 @@ pub const KNOWN_KEYS: &[&str] = &[
     "resend-api-key",
     "notion-api-key",
     "calcom-api-key",
+    // Read-only dashboards (integrations.rs): Cloudflare Workers and zones, Hetzner Cloud servers.
+    "cloudflare-api-token",
+    "cloudflare-account-id",
+    "hetzner-api-token",
     // « OK Coucou »'s answers in an ElevenLabs voice.
     "elevenlabs-api-key",
 ];

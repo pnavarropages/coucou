@@ -24,6 +24,11 @@ use crate::{claude_code, net, secrets};
 
 /// Credential store entry of the Anthropic API key.
 pub const KEY: &str = "anthropic-api-key";
+/// Credential store entry of the optional Anthropic workspace id. Organization
+/// keys that are not scoped to a workspace need it in every request.
+pub const WORKSPACE_KEY: &str = "anthropic-workspace-id";
+const WORKSPACE_HEADER: &str = "anthropic-workspace-id";
+const API_HOST: &str = "api.anthropic.com";
 const DEFAULT_ENDPOINT: &str = "https://api.anthropic.com/v1/messages";
 const BASE_URL_VAR: &str = "COUCOU_ANTHROPIC_BASE_URL";
 const ANTHROPIC_VERSION: &str = "2023-06-01";
@@ -68,6 +73,38 @@ fn endpoint() -> Result<Url, String> {
             resolved
         })
         .clone()
+}
+
+/// The workspace id to send to `url`: only Anthropic's own API gets it (a gateway
+/// the user pointed COUCOU_ANTHROPIC_BASE_URL at is not told which workspace the
+/// key belongs to), only when one is stored, and only if it is a valid header value.
+fn workspace_for(url: &Url, stored: Option<String>) -> Option<String> {
+    if url.host_str() != Some(API_HOST) {
+        return None;
+    }
+    let id = stored?.trim().to_string();
+    let valid = !id.is_empty() && id.len() <= 128 && id.chars().all(|c| c.is_ascii_graphic());
+    valid.then_some(id)
+}
+
+/// `request` with the `anthropic-workspace-id` header when the user stored one.
+fn with_workspace(request: reqwest::RequestBuilder, url: &Url) -> reqwest::RequestBuilder {
+    match workspace_for(url, secrets::get(WORKSPACE_KEY)) {
+        Some(id) => request.header(WORKSPACE_HEADER, id),
+        None => request,
+    }
+}
+
+/// The API's error line. An organization key that is not scoped to a workspace is
+/// refused with a message that names the header; say where to set it.
+fn api_error(status: reqwest::StatusCode, body: &[u8]) -> String {
+    let detail = net::error_detail(body);
+    let hint = if detail.contains(WORKSPACE_HEADER) {
+        format!(" — {}", t("Set the workspace ID in Settings → Claude."))
+    } else {
+        String::new()
+    };
+    format!("Claude API {status}: {detail}{hint}")
 }
 
 /// The model list endpoint next to the Messages one.
@@ -226,13 +263,14 @@ async fn call(endpoint: &Url, key: &str, body: &Value) -> Result<Value, String> 
 }
 
 async fn call_with_timeout(endpoint: &Url, key: &str, body: &Value, timeout: Duration) -> Result<Value, String> {
-    let response = net::client(endpoint, timeout)?
+    let request = net::client(endpoint, timeout)?
         .post(endpoint.clone())
         .header("x-api-key", key)
         .header("anthropic-version", ANTHROPIC_VERSION)
         .header("anthropic-beta", FALLBACK_BETA)
         .header("content-type", "application/json")
-        .json(body)
+        .json(body);
+    let response = with_workspace(request, endpoint)
         .send()
         .await
         .map_err(|e| tf("Network error: {error}", &[("error", &e.to_string())]))?;
@@ -241,7 +279,7 @@ async fn call_with_timeout(endpoint: &Url, key: &str, body: &Value, timeout: Dur
     if !status.is_success() {
         // Surface the API's own message, which is what makes a bad key obvious.
         let body = net::read_capped(response, net::MAX_ERROR_BODY).await.unwrap_or_default();
-        return Err(format!("Claude API {status}: {}", net::error_detail(&body)));
+        return Err(api_error(status, &body));
     }
     let bytes = net::read_capped(response, net::MAX_BODY).await?;
     serde_json::from_slice(&bytes).map_err(|e| tf("Bad API response: {error}", &[("error", &e.to_string())]))
@@ -250,17 +288,18 @@ async fn call_with_timeout(endpoint: &Url, key: &str, body: &Value, timeout: Dur
 /// The models on the user's Anthropic account, newest first, as the API lists them.
 pub async fn models(key: &str) -> Result<Vec<ModelInfo>, String> {
     let url = models_endpoint(&endpoint()?);
-    let response = net::client(&url, Duration::from_secs(10))?
+    let request = net::client(&url, Duration::from_secs(10))?
         .get(url.clone())
         .header("x-api-key", key)
-        .header("anthropic-version", ANTHROPIC_VERSION)
+        .header("anthropic-version", ANTHROPIC_VERSION);
+    let response = with_workspace(request, &url)
         .send()
         .await
         .map_err(|e| tf("Network error: {error}", &[("error", &e.to_string())]))?;
     let status = response.status();
     if !status.is_success() {
         let body = net::read_capped(response, net::MAX_ERROR_BODY).await.unwrap_or_default();
-        return Err(format!("Claude API {status}: {}", net::error_detail(&body)));
+        return Err(api_error(status, &body));
     }
     let bytes = net::read_capped(response, net::MAX_BODY).await?;
     let json: Value = serde_json::from_slice(&bytes).map_err(|_| t("Unexpected API response."))?;
@@ -436,5 +475,47 @@ mod tests {
                 ModelInfo { id: "claude-x".into(), label: "claude-x".into() },
             ]
         );
+    }
+
+    #[test]
+    fn the_workspace_id_goes_only_to_anthropic_and_only_when_it_is_valid() {
+        let api = Url::parse(DEFAULT_ENDPOINT).unwrap();
+        assert_eq!(workspace_for(&api, Some("wrkspc_01ABC".into())).as_deref(), Some("wrkspc_01ABC"));
+        assert_eq!(workspace_for(&api, Some("  wrkspc_01ABC \n".into())).as_deref(), Some("wrkspc_01ABC"));
+        assert_eq!(workspace_for(&api, None), None);
+        assert_eq!(workspace_for(&api, Some("   ".into())), None);
+        // Not a header value: a space inside, a control character, too long.
+        assert_eq!(workspace_for(&api, Some("two words".into())), None);
+        assert_eq!(workspace_for(&api, Some("a\u{7}b".into())), None);
+        assert_eq!(workspace_for(&api, Some("x".repeat(129))), None);
+        // A gateway never learns the id.
+        let gateway = net::anthropic_endpoint("https://gw.example.com/anthropic").unwrap();
+        assert_eq!(workspace_for(&gateway, Some("wrkspc_01ABC".into())), None);
+        assert!(crate::secrets::KNOWN_KEYS.contains(&WORKSPACE_KEY));
+    }
+
+    #[test]
+    fn the_header_is_on_the_request_when_an_id_is_given() {
+        let api = Url::parse(DEFAULT_ENDPOINT).unwrap();
+        let build = |id: Option<String>| {
+            let request = reqwest::Client::new().post(api.clone()).header("x-api-key", "k");
+            let request = match workspace_for(&api, id) {
+                Some(id) => request.header(WORKSPACE_HEADER, id),
+                None => request,
+            };
+            request.build().unwrap()
+        };
+        assert_eq!(build(Some("wrkspc_01ABC".into())).headers().get("anthropic-workspace-id").unwrap(), "wrkspc_01ABC");
+        assert!(build(None).headers().get("anthropic-workspace-id").is_none());
+    }
+
+    #[test]
+    fn an_unscoped_key_error_says_where_to_set_the_workspace() {
+        let body = br#"{"type":"error","error":{"type":"invalid_request_error","message":"This API key is not scoped to a workspace, so this request must include the anthropic-workspace-id header"}}"#;
+        let line = api_error(reqwest::StatusCode::BAD_REQUEST, body);
+        assert!(line.starts_with("Claude API 400 Bad Request: This API key is not scoped"), "{line}");
+        assert!(line.ends_with("Set the workspace ID in Settings → Claude."), "{line}");
+        let other = api_error(reqwest::StatusCode::UNAUTHORIZED, br#"{"error":{"message":"invalid x-api-key"}}"#);
+        assert_eq!(other, "Claude API 401 Unauthorized: invalid x-api-key");
     }
 }
