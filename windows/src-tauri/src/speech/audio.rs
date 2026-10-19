@@ -477,7 +477,12 @@ pub fn read_wav(path: &Path) -> std::io::Result<Vec<f32>> {
     if bytes.len() < 44 || &bytes[0..4] != b"RIFF" {
         return Err(std::io::Error::new(std::io::ErrorKind::InvalidData, "not a WAV file"));
     }
-    Ok(bytes[44..].chunks_exact(2).map(|b| i16::from_le_bytes([b[0], b[1]]) as f32 / 32768.0).collect())
+    Ok(bytes[44..]
+        .as_chunks::<2>()
+        .0
+        .iter()
+        .map(|sample| i16::from_le_bytes(*sample) as f32 / 32768.0)
+        .collect())
 }
 
 

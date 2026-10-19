@@ -408,8 +408,8 @@ pub fn unified_diff(before: &str, after: &str) -> String {
     for idx in changed {
         let lo = idx.saturating_sub(3);
         let hi = (idx + 4).min(out.len());
-        for k in lo..hi {
-            keep[k] = true;
+        for item in keep.iter_mut().take(hi).skip(lo) {
+            *item = true;
         }
     }
     let mut result = String::new();

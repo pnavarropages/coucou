@@ -465,7 +465,12 @@ mod with_models {
         let path = std::env::var("COUCOU_TEST_WAV").expect("COUCOU_TEST_WAV");
         let bytes = std::fs::read(&path).unwrap();
         let rate = u32::from_le_bytes([bytes[24], bytes[25], bytes[26], bytes[27]]);
-        let pcm: Vec<f32> = bytes[44..].chunks_exact(2).map(|b| i16::from_le_bytes([b[0], b[1]]) as f32 / 32768.0).collect();
+        let pcm: Vec<f32> = bytes[44..]
+            .as_chunks::<2>()
+            .0
+            .iter()
+            .map(|sample| i16::from_le_bytes(*sample) as f32 / 32768.0)
+            .collect();
         let mut r = super::audio::Resampler::new(rate);
         let mut samples = Vec::new();
         r.process(&pcm, &mut samples);
