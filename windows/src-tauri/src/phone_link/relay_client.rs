@@ -543,6 +543,7 @@ mod tests {
                     seen.auth.lock().unwrap().push(header("authorization"));
                     seen.protocols.lock().unwrap().push(header("sec-websocket-protocol"));
                     seen.paths.lock().unwrap().push(req.uri().to_string());
+                #[allow(clippy::result_large_err)]
                     if let Some(code) = refuse {
                         let mut r = ErrorResponse::new(None);
                         *r.status_mut() = StatusCode::from_u16(code).unwrap();

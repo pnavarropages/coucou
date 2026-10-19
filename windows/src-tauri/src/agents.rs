@@ -29,7 +29,7 @@ pub enum Shell {
     /// Git Bash on Windows (Claude Code), `sh` on Linux.
     Sh,
     /// `powershell -Command` (Gemini CLI, Copilot CLI's `powershell` field).
-    PowerShell,
+    Pwsh,
     /// `cmd /C`, or a process started directly (Codex, Cursor, Antigravity, Muse).
     Cmd,
 }
@@ -59,7 +59,7 @@ impl Relay {
             Shell::Sh => format!("\"{}\"", self.exe.replace('\\', "/")),
             // A quoted string alone is an expression in PowerShell: `&` runs it.
             // Inside single quotes only `'` is special, and it doubles.
-            Shell::PowerShell => format!("& '{}'", self.exe.replace('\'', "''")),
+            Shell::Pwsh => format!("& '{}'", self.exe.replace('\'', "''")),
             // cmd /C keeps the quotes of a lone quoted program name; a plain path
             // goes unquoted so it also works if the agent turns out to use
             // PowerShell. A Windows path cannot contain `"`.
@@ -189,7 +189,7 @@ impl Agent {
                 let commands: Vec<(String, String, u64)> = GEMINI_EVENTS
                     .iter()
                     .map(|(event, said, timeout)| {
-                        let command = relay.command(Shell::PowerShell, &format!("--agent gemini {said}"));
+                        let command = relay.command(Shell::Pwsh, &format!("--agent gemini {said}"));
                         (event.to_string(), command, *timeout)
                     })
                     .collect();
@@ -649,7 +649,7 @@ fn copilot_entry(relay: &Relay, event: &str, timeout: u64) -> Value {
     let args = format!("--agent copilot {event}");
     let mut entry = json!({ "type": "command", "bash": relay.command(Shell::Sh, &args), "timeoutSec": timeout });
     if relay.windows {
-        entry["powershell"] = json!(relay.command(Shell::PowerShell, &args));
+        entry["powershell"] = json!(relay.command(Shell::Pwsh, &args));
     }
     entry
 }
@@ -1023,7 +1023,7 @@ mod tests {
             "\"C:/Users/me/AppData/Local/Coucou/bin/coucou-hook.exe\" Stop"
         );
         assert_eq!(
-            w.command(Shell::PowerShell, "--agent gemini Stop"),
+            w.command(Shell::Pwsh, "--agent gemini Stop"),
             format!("& '{WIN}' --agent gemini Stop")
         );
         // A plain path is left bare, so cmd and PowerShell both run it.
@@ -1032,7 +1032,7 @@ mod tests {
         let spaced = windows(WIN_SPACE);
         assert_eq!(spaced.command(Shell::Cmd, "x"), format!("\"{WIN_SPACE}\" x"));
         assert_eq!(
-            spaced.command(Shell::PowerShell, "x"),
+            spaced.command(Shell::Pwsh, "x"),
             r"& 'C:\Users\Jane O''Neil\AppData\Local\Coucou\bin\coucou-hook.exe' x"
         );
     }
