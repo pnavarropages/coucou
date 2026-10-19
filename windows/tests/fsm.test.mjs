@@ -3,6 +3,10 @@
 import { afterEach, beforeEach, mock, test } from "node:test";
 import assert from "node:assert/strict";
 import { IslandStateMachine } from "../src/island/fsm.ts";
+import { ALWAYS_VISIBLE } from "../src/core/layout.ts";
+
+// Fork: the island never retreats to the wake strip, so "hidden" lands on "petit".
+const HIDDEN = ALWAYS_VISIBLE ? "petit" : "hidden";
 
 let fsm;
 let transitions;
@@ -64,7 +68,7 @@ test("the compact island hides 60 s after the mouse leaves", () => {
   seconds(59);
   assert.equal(fsm.state, "petit");
   seconds(1);
-  assert.equal(fsm.state, "hidden");
+  assert.equal(fsm.state, HIDDEN);
 });
 
 test("coming back before the 60 s are up cancels the hide", () => {
@@ -125,7 +129,7 @@ test("reveal shows the compact island from hidden and hides it again after 60 s"
   fsm.reveal();
   assert.equal(fsm.state, "petit");
   seconds(60);
-  assert.equal(fsm.state, "hidden");
+  assert.equal(fsm.state, HIDDEN);
 });
 
 test("reveal leaves an island that is already showing alone", () => {
@@ -154,7 +158,7 @@ test("an explicit close goes to the compact island and cancels the collapse", ()
 test("forceHidden hides from any state", () => {
   fsm.forceHome();
   fsm.forceHidden();
-  assert.equal(fsm.state, "hidden");
+  assert.equal(fsm.state, HIDDEN);
 });
 
 test("a transition to the current state is not reported", () => {
@@ -300,7 +304,7 @@ test("a folded card keeps the compact island on screen until it is answered", ()
   assert.equal(fsm.state, "petit");
   fsm.mouseLeft();
   seconds(60);
-  assert.equal(fsm.state, "hidden");
+  assert.equal(fsm.state, HIDDEN);
 });
 
 test("an unusable delay is ignored", () => {
