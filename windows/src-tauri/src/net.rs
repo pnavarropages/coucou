@@ -167,6 +167,27 @@ pub fn host_for_log(url: &Url) -> String {
     }
 }
 
+/// Seconds since the Unix epoch.
+pub fn now_secs() -> u64 {
+    std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_secs()).unwrap_or(0)
+}
+
+/// `secs` since the Unix epoch as `YYYY-MM-DDTHH:MM:SSZ` (UTC), the form the Cloudflare and Hetzner
+/// APIs take for a time range. Days to a calendar date by Howard Hinnant's civil_from_days.
+pub fn iso_utc(secs: u64) -> String {
+    let (days, rem) = ((secs / 86_400) as i64, secs % 86_400);
+    let z = days + 719_468;
+    let era = z.div_euclid(146_097);
+    let doe = z.rem_euclid(146_097);
+    let yoe = (doe - doe / 1_460 + doe / 36_524 - doe / 146_096) / 365;
+    let doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
+    let mp = (5 * doy + 2) / 153;
+    let day = doy - (153 * mp + 2) / 5 + 1;
+    let month = if mp < 10 { mp + 3 } else { mp - 9 };
+    let year = yoe + era * 400 + i64::from(month <= 2);
+    format!("{year:04}-{month:02}-{day:02}T{:02}:{:02}:{:02}Z", rem / 3600, rem % 3600 / 60, rem % 60)
+}
+
 #[cfg(test)]
 pub(crate) mod tests {
     use super::*;
@@ -253,16 +274,106 @@ pub(crate) mod tests {
         let head = format!("HTTP/1.1 {status}\r\n{headers}Connection: close\r\n\r\n");
         std::thread::spawn(move || {
             let (mut conn, _) = listener.accept().unwrap();
-            let mut buf = [0u8; 8192];
-            let _ = conn.read(&mut buf);
+            // The whole request first, then the answer, then a polite close: closing with part of the
+            // request unread makes Windows reset the connection, and a reset throws away whatever the
+            // client has not read yet, which is a large answer cut short.
+            let _ = read_request(&mut conn);
             let _ = conn.write_all(head.as_bytes());
             let _ = conn.write_all(&body);
+            let _ = conn.flush();
+            let _ = conn.shutdown(std::net::Shutdown::Write);
+            let _ = conn.set_read_timeout(Some(Duration::from_secs(2)));
+            let mut sink = [0u8; 1024];
+            while matches!(conn.read(&mut sink), Ok(n) if n > 0) {}
         });
         url
     }
 
+    /// Reads one HTTP request from `conn`: its head, then as much body as the head announces.
+    fn read_request(conn: &mut std::net::TcpStream) -> Option<String> {
+        use std::io::Read;
+        let mut data = Vec::new();
+        let mut buf = [0u8; 4096];
+        loop {
+            let n = conn.read(&mut buf).ok()?;
+            if n == 0 {
+                return None;
+            }
+            data.extend_from_slice(&buf[..n]);
+            let text = String::from_utf8_lossy(&data).to_string();
+            if let Some(end) = text.find("\r\n\r\n") {
+                let wanted = text[..end]
+                    .lines()
+                    .find_map(|l| l.to_ascii_lowercase().strip_prefix("content-length:").and_then(|v| v.trim().parse::<usize>().ok()))
+                    .unwrap_or(0);
+                if data.len() >= end + 4 + wanted {
+                    return Some(text);
+                }
+            }
+        }
+    }
+
     fn block_on<T>(f: impl std::future::Future<Output = T>) -> T {
+        let _turn = loopback_turn();
         tokio::runtime::Builder::new_current_thread().enable_all().build().unwrap().block_on(f)
+    }
+
+    #[test]
+    fn times_are_written_in_utc_for_the_apis() {
+        assert_eq!(iso_utc(0), "1970-01-01T00:00:00Z");
+        assert_eq!(iso_utc(951_782_400 + 86_399), "2000-02-29T23:59:59Z"); // a leap day
+        assert_eq!(iso_utc(1_700_000_000), "2023-11-14T22:13:20Z");
+        assert_eq!(iso_utc(4_102_444_800), "2100-01-01T00:00:00Z");
+        assert!(now_secs() > 1_700_000_000);
+    }
+
+    /// Tests that open several real loopback connections take their turn here. Some antivirus web shields
+    /// scan loopback HTTP and hold connections back when many are open at once, so such tests fail with
+    /// "error sending request" or a timeout although the code is right; one at a time they take milliseconds.
+    pub(crate) fn loopback_turn() -> std::sync::MutexGuard<'static, ()> {
+        static TURN: std::sync::Mutex<()> = std::sync::Mutex::new(());
+        TURN.lock().unwrap_or_else(|poisoned| poisoned.into_inner())
+    }
+
+    /// A local HTTP server for the read-only dashboards' tests: it answers any number of requests, each
+    /// from the first route whose `prefix` starts the request's "METHOD /path?query" (404 `{}` when none
+    /// does). Returns its address and the raw requests it received (head and body), in order.
+    pub(crate) fn serve_routes(routes: Vec<(&str, u16, String)>) -> (String, std::sync::Arc<std::sync::Mutex<Vec<String>>>) {
+        use std::io::{Read, Write};
+        use std::sync::{Arc, Mutex};
+        let routes: Arc<Vec<(String, u16, String)>> = Arc::new(routes.into_iter().map(|(p, s, b)| (p.to_string(), s, b)).collect());
+        let seen = Arc::new(Mutex::new(Vec::<String>::new()));
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let url = format!("http://{}", listener.local_addr().unwrap());
+        let log = seen.clone();
+        std::thread::spawn(move || {
+            for conn in listener.incoming() {
+                let Ok(mut conn) = conn else { continue };
+                let (routes, log) = (routes.clone(), log.clone());
+                std::thread::spawn(move || {
+                    let Some(request) = read_request(&mut conn) else { return };
+                    let line = request.lines().next().unwrap_or("").trim_end_matches(" HTTP/1.1").to_string();
+                    log.lock().unwrap().push(request);
+                    let (status, body) = routes
+                        .iter()
+                        .find(|(prefix, _, _)| line.starts_with(prefix.as_str()))
+                        .map(|(_, s, b)| (*s, b.clone()))
+                        .unwrap_or((404, "{}".into()));
+                    let head = format!(
+                        "HTTP/1.1 {status} X\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
+                        body.len()
+                    );
+                    let _ = conn.write_all(head.as_bytes());
+                    let _ = conn.write_all(body.as_bytes());
+                    let _ = conn.flush();
+                    let _ = conn.shutdown(std::net::Shutdown::Write);
+                    let _ = conn.set_read_timeout(Some(Duration::from_secs(2)));
+                    let mut sink = [0u8; 1024];
+                    while matches!(conn.read(&mut sink), Ok(n) if n > 0) {}
+                });
+            }
+        });
+        (url, seen)
     }
 
     #[test]

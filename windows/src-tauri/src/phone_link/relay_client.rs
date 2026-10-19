@@ -505,7 +505,12 @@ mod tests {
 
     const TOKEN: &str = "test-token-0123456789abcdef";
 
+    /// One at a time (see `loopback_turn`). Each test opens real loopback connections and waits five
+    /// seconds for them; with several at once, an antivirus that scans web traffic on loopback holds some
+    /// back past that, and they fail with "the computer connects: Elapsed" although the code is right.
+    /// Alone they take a few hundred milliseconds.
     fn block_on<F: Future>(f: F) -> F::Output {
+        let _turn = crate::net::tests::loopback_turn();
         tokio::runtime::Builder::new_current_thread().enable_all().build().unwrap().block_on(f)
     }
 
@@ -538,12 +543,12 @@ mod tests {
             loop {
                 let Ok((tcp, _)) = listener.accept().await else { return };
                 let seen = seen2.clone();
+                #[allow(clippy::result_large_err)]
                 let callback = move |req: &Request, mut resp: Response| -> Result<Response, ErrorResponse> {
                     let header = |n: &str| req.headers().get(n).and_then(|v| v.to_str().ok()).unwrap_or("").to_string();
                     seen.auth.lock().unwrap().push(header("authorization"));
                     seen.protocols.lock().unwrap().push(header("sec-websocket-protocol"));
                     seen.paths.lock().unwrap().push(req.uri().to_string());
-                #[allow(clippy::result_large_err)]
                     if let Some(code) = refuse {
                         let mut r = ErrorResponse::new(None);
                         *r.status_mut() = StatusCode::from_u16(code).unwrap();
