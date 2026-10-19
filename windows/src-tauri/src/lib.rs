@@ -39,6 +39,7 @@ mod tray;
 mod voice;
 #[cfg(windows)]
 mod webview_drop;
+mod whatsapp;
 
 use std::process::Command;
 use std::sync::atomic::Ordering;
@@ -130,6 +131,7 @@ fn save_settings(app: AppHandle, shared: State<Shared>, settings: Settings) {
     }
     integrations::settings_saved(&app, &settings.active_integrations);
     spotify::sync(&app, &settings.active_integrations);
+    whatsapp::sync(&app, &settings.active_integrations);
     if shortcuts_changed {
         shortcuts::apply(&app, &settings.shortcuts);
     }
@@ -804,6 +806,15 @@ pub fn run() {
             phone_link::phone_chat_status,
             phone_link::phone_chat_set_enabled,
             phone_link::phone_chat_set_models,
+            whatsapp::whatsapp_snapshot,
+            whatsapp::whatsapp_status,
+            whatsapp::whatsapp_install,
+            whatsapp::whatsapp_set_prefs,
+            whatsapp::whatsapp_open,
+            whatsapp::whatsapp_close,
+            whatsapp::whatsapp_send,
+            whatsapp::whatsapp_ignore,
+            whatsapp::whatsapp_unignore,
             recap::recap_history,
             recap::recap_prefs,
             recap::recap_set_enabled,
@@ -868,6 +879,7 @@ pub fn run() {
         .setup(move |app| {
             let handle = app.handle().clone();
             app.manage(phone_link::PhoneLink::new(handle.clone()));
+            whatsapp::setup(&handle);
             tray::build(&handle)?;
             // Before the island: see create_settings_window.
             create_settings_window(&handle);
@@ -905,6 +917,7 @@ pub fn run() {
             phone_link::start_if_enabled(&handle);
             integrations::start(handle.clone());
             spotify::sync(&handle, &loaded.active_integrations);
+            whatsapp::sync(&handle, &loaded.active_integrations);
             shortcuts::apply(&handle, &loaded.shortcuts);
             if loaded.autostart {
                 // Login items written before 0.5 start Coucou without --autostart:
@@ -926,6 +939,7 @@ pub fn run() {
                     platform::release_strip(&win);
                 }
                 phone_link::stop_on_exit(app);
+                whatsapp::stop_on_exit(app);
                 notes::shutdown(app);
             }
         });

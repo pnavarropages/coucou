@@ -134,6 +134,10 @@ export const PILL_CATALOG: readonly PillDefinition[] = [
   // (src-tauri/src/spotify.rs).
   { id: "integration_spotify", name: "Spotify", color: "#1DB954", category: "service",
     subtitle: N_("Integration"), source: "n8n", support: "yes", connect: none },
+  // Your WhatsApp messages, through GOWA: an unofficial gateway that Coucou installs and starts on
+  // this PC (src-tauri/src/whatsapp). Linked by scanning a QR code in Settings.
+  { id: "integration_whatsapp", name: "WhatsApp", color: "#25D366", category: "service",
+    subtitle: N_("Integration"), source: "n8n", support: "yes", connect: none },
   // ── Only on Windows and Linux (after the Mac's list, which they never reorder) ──
   // Read-only dashboards: Cloudflare Workers and domains, Hetzner Cloud servers
   // (src-tauri/src/cloudflare.rs, hetzner.rs).

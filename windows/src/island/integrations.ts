@@ -2,11 +2,12 @@
 // pollers: a genuinely new item flips the pill to finished/error, badges it when
 // the pill isn't focused, plays a sound, and clears itself after 60 s.
 
-import { onEvent, Bridge, type IntegrationUpdate } from "../core/bridge";
+import { onEvent, Bridge, type IntegrationUpdate, type WhatsAppSnapshot } from "../core/bridge";
 import { gitHubAlert, type GitHubEvent } from "../core/github";
 import { availablePills } from "../core/pills";
 import { Sound } from "../core/sound";
 import { State } from "../core/state";
+import { WHATSAPP_ID, WhatsApp } from "../core/whatsapp";
 import type { Island } from "./island";
 
 const GITHUB = "integration_github";
@@ -16,6 +17,10 @@ const clearTimers = new Map<string, number>();
 export function registerIntegrationHandlers(island: Island) {
   void onEvent<IntegrationUpdate>("integration", (update) => handle(island, update));
   void onEvent<GitHubEvent[]>("github-alerts", handleGitHubAlerts);
+  void onEvent<WhatsAppSnapshot>("whatsapp-state", handleWhatsApp);
+  void Bridge.whatsappSnapshot().then((snapshot) => {
+    if (snapshot) handleWhatsApp(snapshot);
+  });
   void refreshConfigured();
   State.subscribe(refreshGitHubWhenShown);
 }
@@ -34,6 +39,24 @@ export function handleGitHubAlerts(events: GitHubEvent[]) {
   if (!task) return;
   if (State.focusId !== GITHUB) task.pillBadge = alert.badge;
   Sound.play(alert.sound);
+  State.notify();
+}
+
+/**
+ * WhatsApp's picture changed (src-tauri/src/whatsapp). The card draws it; the pill shows a small
+ * red badge while the gateway is down (twice in a row, not a gateway still starting), and loses a
+ * "new message" badge once nothing is unread.
+ */
+export function handleWhatsApp(snapshot: WhatsAppSnapshot) {
+  WhatsApp.snapshot = snapshot;
+  const task = State.tasks.find((t) => t.id === WHATSAPP_ID);
+  if (task && !State.paused) {
+    if (snapshot.down) {
+      if (State.focusId !== WHATSAPP_ID && task.pillBadge == null) task.pillBadge = "error";
+    } else if (task.pillBadge === "error" || (task.pillBadge === "finished" && snapshot.unread === 0)) {
+      task.pillBadge = null;
+    }
+  }
   State.notify();
 }
 

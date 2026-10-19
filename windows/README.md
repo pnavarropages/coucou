@@ -504,6 +504,21 @@ own window.
   its `spotify:` link, and without Spotify **Get Spotify** opens its download
   page. Windows gives no Spotify link for the track, so an ad is told apart by
   having a title and no artist or album.
+- **WhatsApp** (Settings → Integrations, experimental) goes through GOWA, the
+  open-source gateway, like on the Mac. **Install WhatsApp** downloads the
+  latest `windows-amd64` release from its GitHub page into
+  `%LOCALAPPDATA%\Coucou\GOWA\`, checks it against GitHub's digest and the
+  release's `checksums.txt` (the Windows certificate store does the TLS), and
+  starts it on `127.0.0.1` only, on the port of the gateway URL (3011 by
+  default), without downloading media. The basic-auth credential is generated
+  and kept in Windows Credential Manager; a Job Object stops GOWA with Coucou.
+  Then link the phone: WhatsApp › Settings › Linked devices › Link a device,
+  and scan the QR code. Recent messages stay in memory (20 per chat), never
+  logged or saved; a reply goes only to a chat that wrote first, up to 4096
+  characters and 6 a minute, and only on your Return or click. It is an
+  unofficial client: WhatsApp may restrict accounts that use it. An unsigned
+  `gowa.exe` can be quarantined by an antivirus; allow it, or point Coucou at
+  your own gateway under Advanced. OpenWA is not supported.
 - Not in this version: sending a dropped file by email and dragging Mochi onto
   a window to attach it as context. On the Mac, email goes through Resend or
   Apple Mail's scripting; neither has a safe equivalent that attaches a file

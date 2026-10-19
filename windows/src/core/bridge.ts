@@ -178,6 +178,88 @@ export interface PhoneAnswersStatus {
   enabled: boolean;
 }
 
+/** What a WhatsApp message holds besides text: a label only, the media is never fetched. */
+export type WhatsAppMedia =
+  | { kind: "none" | "image" | "video" | "sticker" | "location" | "contact" | "other" }
+  | { kind: "audio" | "voice"; seconds: number | null }
+  | { kind: "document"; name: string | null };
+
+export interface WhatsAppMessage {
+  id: string;
+  chat: string;
+  sender: string;
+  senderName: string;
+  text: string;
+  media: WhatsAppMedia;
+  /** Unix seconds. */
+  date: number;
+  fromMe: boolean;
+  mentionsMe: boolean;
+}
+
+export interface WhatsAppConversation {
+  id: string;
+  name: string;
+  isGroup: boolean;
+  /** Oldest first. */
+  messages: WhatsAppMessage[];
+  unread: number;
+  /** Unix seconds. */
+  lastActivity: number;
+}
+
+export type WhatsAppLink = "off" | "connecting" | "needsQr" | "connected" | "unreachable" | "unauthorized" | "failed";
+
+/** What the island shows (src-tauri/src/whatsapp): the conversations the pill lists and the state of a reply. */
+export interface WhatsAppSnapshot {
+  link: WhatsAppLink;
+  linkMessage: string | null;
+  me: string | null;
+  conversations: WhatsAppConversation[];
+  unread: number;
+  /** The gateway has been down twice in a row: a small red badge on the pill. */
+  down: boolean;
+  sending: boolean;
+  sendError: string | null;
+}
+
+export type WhatsAppInstall =
+  | { step: "idle" | "checking" | "verifying" | "installing" }
+  | { step: "downloading"; megabytes: number }
+  | { step: "done"; version: string }
+  | { step: "failed"; message: string };
+
+/** What Settings shows of WhatsApp. Never a message. */
+export interface WhatsAppStatus {
+  link: WhatsAppLink;
+  linkMessage: string | null;
+  me: string | null;
+  webhook: "off" | "listening" | "registered" | "refused" | "portBusy";
+  webhookLine: string;
+  /** The QR to scan, as a data: URL. */
+  qr: string | null;
+  installed: boolean;
+  version: string | null;
+  install: WhatsAppInstall;
+  supported: boolean;
+  /** Where GOWA and its WhatsApp session live. */
+  folder: string;
+  url: string;
+  webhookPort: number;
+  autoStart: boolean;
+  markReadOnOpen: boolean;
+  muteGroups: boolean;
+  ignored: { id: string; name: string }[];
+}
+
+export interface WhatsAppPrefsChange {
+  url: string;
+  webhookPort: number;
+  autoStart: boolean;
+  markReadOnOpen: boolean;
+  muteGroups: boolean;
+}
+
 export const Bridge = {
   boot: () => call<BootInfo>("boot"),
   /** The system's languages as the webview sees them, for Rust's own texts (i18n.rs). */
@@ -409,6 +491,21 @@ export const Bridge = {
   spotifyOpen: () => call<boolean>("spotify_open"),
   /** Whether there is a Spotify to launch (Settings). */
   spotifyInstalled: () => call<boolean>("spotify_installed"),
+
+  // ── WhatsApp (src-tauri/src/whatsapp) ─────────────────────────────────────
+  /** The island: the conversations the pill lists. Changes come as "whatsapp-state" events. */
+  whatsappSnapshot: () => call<WhatsAppSnapshot>("whatsapp_snapshot"),
+  whatsappOpen: (chat: string) => call<void>("whatsapp_open", { chat }),
+  whatsappClose: (chat: string) => call<void>("whatsapp_close", { chat }),
+  /** A reply the user typed and sent. Throws the sentence for the field (empty: nothing to say). */
+  whatsappSend: (chat: string, text: string) => callOrThrow<void>("whatsapp_send", { chat, text }),
+  whatsappIgnore: (chat: string) => call<void>("whatsapp_ignore", { chat }),
+  /** Settings: the link, the QR, what is installed. */
+  whatsappStatus: () => call<WhatsAppStatus>("whatsapp_status"),
+  /** "Install WhatsApp": progress shows in the status. */
+  whatsappInstall: () => call<void>("whatsapp_install"),
+  whatsappSetPrefs: (change: WhatsAppPrefsChange) => callOrThrow<void>("whatsapp_set_prefs", { change }),
+  whatsappUnignore: (chat: string) => call<void>("whatsapp_unignore", { chat }),
 };
 
 export type SpotifyAction = "playPause" | "next" | "previous" | "seek" | "shuffle" | "repeat" | "volume";

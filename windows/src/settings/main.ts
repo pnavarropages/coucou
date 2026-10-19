@@ -21,6 +21,8 @@ import { startHub, type PageId } from "../hub/shell";
 import { FLOW_PAGE_RENDERERS } from "../hub/pages";
 import { agentsSection } from "./agents";
 import { phoneSection } from "./phone";
+import { whatsappBlock } from "./whatsapp";
+import { WHATSAPP_ID } from "../core/whatsapp";
 import { colorDot } from "./colors";
 import { renderDiff, statusDot } from "./parts";
 import {
@@ -833,6 +835,8 @@ const INTEGRATIONS: IntegrationDef[] = [
     fields: [{ key: "calcom-api-key", label: N_("API key"), placeholder: "cal_…", secret: true }] },
   // Nothing to enter: Spotify is read from the OS (src-tauri/src/spotify.rs).
   { id: "integration_spotify", name: "Spotify", color: "#1DB954", fields: [] },
+  // Linked by a QR code, not a key: its block (settings/whatsapp.ts) sits under the switch.
+  { id: "integration_whatsapp", name: "WhatsApp", color: "#25D366", fields: [] },
 ];
 
 const MAX_ACTIVE = MAX_DECLARED;
@@ -903,6 +907,11 @@ function integrationsSection(present: Record<string, boolean>): HTMLElement {
     }
 
     if (def.hint) rows.append(h("div", { class: "hint", text: t(def.hint) }));
+    if (def.id === WHATSAPP_ID) {
+      const block = whatsappBlock(toggle, () => settings.activeIntegrations.includes(WHATSAPP_ID));
+      rows.append(block.el);
+      declaredViews.push(block.redraw);
+    }
     if (def.id === "integration_spotify") {
       // As on the Mac's row: said only when there is no Spotify to launch.
       const hint = h("div", { class: "hint", style: "padding-top:5px" });
