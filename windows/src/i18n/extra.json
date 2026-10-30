@@ -7228,7 +7228,11 @@
       "bn": "API টোকেন অবৈধ (401)",
       "pt-BR": "Token de API inválido (401)",
       "ru": "Недействительный токен API (401)",
-      "id": "Token API tidak valid (401)"
+      "id": "Token API tidak valid (401)",
+      "de": "Ungültiges API-Token (401)",
+      "tr": "Geçersiz API tokeni (401)",
+      "ko": "유효하지 않은 API 토큰(401)",
+      "ja": "無効な API トークン (401)"
     },
     "The token needs the permission: {permission}": {
       "zh-Hans": "该令牌需要权限：{permission}",
@@ -7239,7 +7243,11 @@
       "bn": "টোকেনের এই অনুমতি দরকার: {permission}",
       "pt-BR": "O token precisa da permissão: {permission}",
       "ru": "Токену нужно разрешение: {permission}",
-      "id": "Token membutuhkan izin: {permission}"
+      "id": "Token membutuhkan izin: {permission}",
+      "de": "Das Token benötigt die Berechtigung: {permission}",
+      "tr": "Token şu izne ihtiyaç duyuyor: {permission}",
+      "ko": "토큰에 다음 권한이 필요합니다: {permission}",
+      "ja": "トークンには次の権限が必要です: {permission}"
     },
     "Add the Cloudflare account ID in Settings.": {
       "zh-Hans": "请在设置中填写 Cloudflare 账户 ID。",
@@ -7250,7 +7258,11 @@
       "bn": "সেটিংসে Cloudflare অ্যাকাউন্ট ID যোগ করুন।",
       "pt-BR": "Adicione o ID da conta do Cloudflare nos Ajustes.",
       "ru": "Укажите ID аккаунта Cloudflare в настройках.",
-      "id": "Tambahkan ID akun Cloudflare di Pengaturan."
+      "id": "Tambahkan ID akun Cloudflare di Pengaturan.",
+      "de": "Füge die Cloudflare-Konto-ID in den Einstellungen hinzu.",
+      "tr": "Cloudflare hesap kimliğini Ayarlar'a ekleyin.",
+      "ko": "설정에 Cloudflare 계정 ID를 추가하세요.",
+      "ja": "設定に Cloudflare アカウント ID を追加してください。"
     },
     "Hetzner is limiting requests. Try again in a while.": {
       "zh-Hans": "Hetzner 正在限制请求，请稍后再试。",
@@ -7261,7 +7273,11 @@
       "bn": "Hetzner অনুরোধ সীমিত করছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।",
       "pt-BR": "O Hetzner está limitando as requisições. Tente de novo daqui a pouco.",
       "ru": "Hetzner ограничивает запросы. Повторите попытку чуть позже.",
-      "id": "Hetzner membatasi permintaan. Coba lagi beberapa saat lagi."
+      "id": "Hetzner membatasi permintaan. Coba lagi beberapa saat lagi.",
+      "de": "Hetzner begrenzt die Anfragen. Versuche es später erneut.",
+      "tr": "Hetzner istekleri sınırlıyor. Bir süre sonra tekrar deneyin.",
+      "ko": "Hetzner가 요청을 제한하고 있습니다. 잠시 후 다시 시도하세요.",
+      "ja": "Hetzner がリクエストを制限しています。しばらくしてからもう一度お試しください。"
     },
     "Set the workspace ID in Settings → Claude.": {
       "zh-Hans": "请在 设置 → Claude 中填写工作区 ID。",
@@ -7272,7 +7288,11 @@
       "bn": "সেটিংস → Claude-এ ওয়ার্কস্পেস ID দিন।",
       "pt-BR": "Informe o ID do workspace em Ajustes → Claude.",
       "ru": "Укажите ID рабочего пространства в Настройки → Claude.",
-      "id": "Isi ID workspace di Pengaturan → Claude."
+      "id": "Isi ID workspace di Pengaturan → Claude.",
+      "de": "Lege die Workspace-ID unter Einstellungen → Claude fest.",
+      "tr": "Çalışma alanı kimliğini Ayarlar → Claude bölümünde ayarlayın.",
+      "ko": "설정 → Claude에서 워크스페이스 ID를 설정하세요.",
+      "ja": "設定 → Claude でワークスペース ID を設定してください。"
     },
     "Errors: {n}": {
       "zh-Hans": "错误：{n}",
@@ -7283,7 +7303,11 @@
       "bn": "ত্রুটি: {n}",
       "pt-BR": "Erros: {n}",
       "ru": "Ошибки: {n}",
-      "id": "Error: {n}"
+      "id": "Error: {n}",
+      "de": "Fehler: {n}",
+      "tr": "Hatalar: {n}",
+      "ko": "오류: {n}",
+      "ja": "エラー: {n}"
     },
     "Errors in the last 24 hours": {
       "zh-Hans": "过去 24 小时的错误",
@@ -7294,7 +7318,11 @@
       "bn": "গত ২৪ ঘণ্টার ত্রুটি",
       "pt-BR": "Erros nas últimas 24 horas",
       "ru": "Ошибки за последние 24 часа",
-      "id": "Error dalam 24 jam terakhir"
+      "id": "Error dalam 24 jam terakhir",
+      "de": "Fehler in den letzten 24 Stunden",
+      "tr": "Son 24 saatteki hatalar",
+      "ko": "지난 24시간의 오류",
+      "ja": "過去24時間のエラー"
     },
     "No Workers yet": {
       "zh-Hans": "还没有 Worker",
@@ -7305,7 +7333,11 @@
       "bn": "এখনও কোনো Worker নেই",
       "pt-BR": "Ainda não há Workers",
       "ru": "Workers пока нет",
-      "id": "Belum ada Worker"
+      "id": "Belum ada Worker",
+      "de": "Noch keine Workers",
+      "tr": "Henüz Worker yok",
+      "ko": "아직 Worker가 없습니다",
+      "ja": "Worker はまだありません"
     },
     "Domains: {active}/{total} active": {
       "zh-Hans": "域名：{active}/{total} 个已激活",
@@ -7316,7 +7348,11 @@
       "bn": "ডোমেইন: {active}/{total} সক্রিয়",
       "pt-BR": "Domínios: {active}/{total} ativos",
       "ru": "Домены: активны {active} из {total}",
-      "id": "Domain: {active}/{total} aktif"
+      "id": "Domain: {active}/{total} aktif",
+      "de": "Domains: {active}/{total} aktiv",
+      "tr": "Alan adları: {active}/{total} etkin",
+      "ko": "도메인: {active}/{total} 활성",
+      "ja": "ドメイン: {active}/{total} が有効"
     },
     "Workers": {
       "zh-Hans": "Workers",
@@ -7327,7 +7363,11 @@
       "bn": "Workers",
       "pt-BR": "Workers",
       "ru": "Workers",
-      "id": "Workers"
+      "id": "Workers",
+      "de": "Workers",
+      "tr": "Worker'lar",
+      "ko": "Workers",
+      "ja": "Workers"
     },
     "Servers": {
       "zh-Hans": "服务器",
@@ -7338,7 +7378,11 @@
       "bn": "সার্ভার",
       "pt-BR": "Servidores",
       "ru": "Серверы",
-      "id": "Server"
+      "id": "Server",
+      "de": "Server",
+      "tr": "Sunucular",
+      "ko": "서버",
+      "ja": "サーバー"
     },
     "CPU {n}%": {
       "zh-Hans": "CPU {n}%",
@@ -7349,7 +7393,11 @@
       "bn": "CPU {n}%",
       "pt-BR": "CPU {n}%",
       "ru": "CPU {n}%",
-      "id": "CPU {n}%"
+      "id": "CPU {n}%",
+      "de": "CPU {n}%",
+      "tr": "CPU {n}%",
+      "ko": "CPU {n}%",
+      "ja": "CPU {n}%"
     },
     "No servers yet": {
       "zh-Hans": "还没有服务器",
@@ -7360,7 +7408,11 @@
       "bn": "এখনও কোনো সার্ভার নেই",
       "pt-BR": "Ainda não há servidores",
       "ru": "Серверов пока нет",
-      "id": "Belum ada server"
+      "id": "Belum ada server",
+      "de": "Noch keine Server",
+      "tr": "Henüz sunucu yok",
+      "ko": "아직 서버가 없습니다",
+      "ja": "サーバーはまだありません"
     },
     "Running: {running}/{total}": {
       "zh-Hans": "运行中：{running}/{total}",
@@ -7371,7 +7423,11 @@
       "bn": "চালু: {running}/{total}",
       "pt-BR": "Em execução: {running}/{total}",
       "ru": "Работают: {running} из {total}",
-      "id": "Berjalan: {running}/{total}"
+      "id": "Berjalan: {running}/{total}",
+      "de": "In Betrieb: {running}/{total}",
+      "tr": "Çalışıyor: {running}/{total}",
+      "ko": "실행 중: {running}/{total}",
+      "ja": "稼働中: {running}/{total}"
     },
     "API token": {
       "zh-Hans": "API 令牌",
@@ -7382,7 +7438,11 @@
       "bn": "API টোকেন",
       "pt-BR": "Token de API",
       "ru": "Токен API",
-      "id": "Token API"
+      "id": "Token API",
+      "de": "API-Token",
+      "tr": "API tokeni",
+      "ko": "API 토큰",
+      "ja": "API トークン"
     },
     "Account ID (optional)": {
       "zh-Hans": "账户 ID（可选）",
@@ -7393,7 +7453,11 @@
       "bn": "অ্যাকাউন্ট ID (ঐচ্ছিক)",
       "pt-BR": "ID da conta (opcional)",
       "ru": "ID аккаунта (необязательно)",
-      "id": "ID akun (opsional)"
+      "id": "ID akun (opsional)",
+      "de": "Konto-ID (optional)",
+      "tr": "Hesap kimliği (isteğe bağlı)",
+      "ko": "계정 ID(선택 사항)",
+      "ja": "アカウント ID（任意）"
     },
     "Read-only. Create a custom token with Account > Workers Scripts > Read, Zone > Zone > Read and, to see errors, Account > Account Analytics > Read. Without the account ID, Coucou finds it from your domains.": {
       "zh-Hans": "只读。创建自定义令牌，权限为 Account > Workers Scripts > Read、Zone > Zone > Read，若要查看错误，再加 Account > Account Analytics > Read。未填写账户 ID 时，Coucou 会根据你的域名自动查找。",
@@ -7404,7 +7468,11 @@
       "bn": "শুধু পড়ার জন্য। Account > Workers Scripts > Read, Zone > Zone > Read এবং ত্রুটি দেখতে Account > Account Analytics > Read অনুমতিসহ একটি কাস্টম টোকেন বানান। অ্যাকাউন্ট ID না দিলে Coucou আপনার ডোমেইন থেকে সেটি খুঁজে নেয়।",
       "pt-BR": "Somente leitura. Crie um token personalizado com Account > Workers Scripts > Read, Zone > Zone > Read e, para ver os erros, Account > Account Analytics > Read. Sem o ID da conta, o Coucou o descobre pelos seus domínios.",
       "ru": "Только чтение. Создайте пользовательский токен с правами Account > Workers Scripts > Read, Zone > Zone > Read и, чтобы видеть ошибки, Account > Account Analytics > Read. Если не указать ID аккаунта, Coucou определит его по вашим доменам.",
-      "id": "Hanya baca. Buat token kustom dengan izin Account > Workers Scripts > Read, Zone > Zone > Read dan, untuk melihat error, Account > Account Analytics > Read. Tanpa ID akun, Coucou mencarinya dari domain Anda."
+      "id": "Hanya baca. Buat token kustom dengan izin Account > Workers Scripts > Read, Zone > Zone > Read dan, untuk melihat error, Account > Account Analytics > Read. Tanpa ID akun, Coucou mencarinya dari domain Anda.",
+      "de": "Nur Lesezugriff. Erstelle ein benutzerdefiniertes Token mit Account > Workers Scripts > Read, Zone > Zone > Read und, um Fehler zu sehen, Account > Account Analytics > Read. Ohne Konto-ID ermittelt Coucou sie aus deinen Domains.",
+      "tr": "Salt okunur. Account > Workers Scripts > Read, Zone > Zone > Read ve hataları görmek için Account > Account Analytics > Read izinleriyle özel bir token oluşturun. Hesap kimliği olmadan Coucou bunu alan adlarınızdan bulur.",
+      "ko": "읽기 전용입니다. Account > Workers Scripts > Read, Zone > Zone > Read 권한과 오류를 보려면 Account > Account Analytics > Read 권한이 있는 사용자 지정 토큰을 만드세요. 계정 ID가 없으면 Coucou가 도메인에서 찾습니다.",
+      "ja": "読み取り専用です。Account > Workers Scripts > Read、Zone > Zone > Read、エラーを表示するには Account > Account Analytics > Read 権限を持つカスタムトークンを作成してください。アカウント ID がない場合、Coucou がドメインから検索します。"
     },
     "Read-only. In your Hetzner Cloud project: Security > API tokens, with the Read permission. Coucou never creates, stops or deletes anything.": {
       "zh-Hans": "只读。在 Hetzner Cloud 项目中：Security > API tokens，权限选 Read。Coucou 不会创建、停止或删除任何内容。",
@@ -7415,7 +7483,11 @@
       "bn": "শুধু পড়ার জন্য। আপনার Hetzner Cloud প্রজেক্টে: Security > API tokens, Read অনুমতিসহ। Coucou কখনো কিছু তৈরি, বন্ধ বা মুছে না।",
       "pt-BR": "Somente leitura. No seu projeto do Hetzner Cloud: Security > API tokens, com a permissão Read. O Coucou nunca cria, para nem exclui nada.",
       "ru": "Только чтение. В вашем проекте Hetzner Cloud: Security > API tokens, право Read. Coucou ничего не создаёт, не останавливает и не удаляет.",
-      "id": "Hanya baca. Di proyek Hetzner Cloud Anda: Security > API tokens, dengan izin Read. Coucou tidak pernah membuat, menghentikan, atau menghapus apa pun."
+      "id": "Hanya baca. Di proyek Hetzner Cloud Anda: Security > API tokens, dengan izin Read. Coucou tidak pernah membuat, menghentikan, atau menghapus apa pun.",
+      "de": "Nur Lesezugriff. In deinem Hetzner-Cloud-Projekt: Security > API tokens, mit der Berechtigung Read. Coucou erstellt, stoppt oder löscht niemals etwas.",
+      "tr": "Salt okunur. Hetzner Cloud projenizde Security > API tokens bölümünden Read izinli bir token oluşturun. Coucou hiçbir şeyi oluşturmaz, durdurmaz veya silmez.",
+      "ko": "읽기 전용입니다. Hetzner Cloud 프로젝트의 Security > API tokens에서 Read 권한을 선택하세요. Coucou는 어떤 것도 생성하거나 중지하거나 삭제하지 않습니다.",
+      "ja": "読み取り専用です。Hetzner Cloud プロジェクトの Security > API tokens で Read 権限を選択してください。Coucou が作成、停止、削除を行うことはありません。"
     },
     "Workspace ID (optional)": {
       "zh-Hans": "工作区 ID（可选）",
@@ -7426,7 +7498,11 @@
       "bn": "ওয়ার্কস্পেস ID (ঐচ্ছিক)",
       "pt-BR": "ID do workspace (opcional)",
       "ru": "ID рабочего пространства (необязательно)",
-      "id": "ID workspace (opsional)"
+      "id": "ID workspace (opsional)",
+      "de": "Workspace-ID (optional)",
+      "tr": "Çalışma alanı kimliği (isteğe bağlı)",
+      "ko": "워크스페이스 ID(선택 사항)",
+      "ja": "ワークスペース ID（任意）"
     },
     "Only for organization API keys that are not scoped to a workspace: Anthropic then asks for this ID. Find it in the Console under Workspaces. Leave empty and Save to remove it.": {
       "zh-Hans": "仅适用于未限定到某个工作区的组织 API 密钥：此时 Anthropic 会要求提供该 ID。可在 Console 的 Workspaces 中找到。留空并点击“保存”即可删除。",
@@ -7437,7 +7513,11 @@
       "bn": "শুধু সেই সংস্থা-স্তরের API কী-র জন্য যা কোনো ওয়ার্কস্পেসে সীমাবদ্ধ নয়: তখন Anthropic এই ID চায়। এটি Console-এর Workspaces-এ পাবেন। সরাতে ফাঁকা রেখে “সংরক্ষণ” চাপুন।",
       "pt-BR": "Só para chaves de API de organização sem workspace definido: a Anthropic pede então este ID. Ele fica no Console, em Workspaces. Deixe vazio e clique em «Salvar» para remover.",
       "ru": "Только для API-ключей организации, не привязанных к рабочему пространству: тогда Anthropic запрашивает этот ID. Его можно найти в Console в разделе Workspaces. Чтобы удалить, оставьте поле пустым и нажмите «Сохранить».",
-      "id": "Hanya untuk kunci API organisasi yang tidak terikat ke workspace: Anthropic lalu meminta ID ini. Temukan di Console pada Workspaces. Kosongkan lalu tekan “Simpan” untuk menghapusnya."
+      "id": "Hanya untuk kunci API organisasi yang tidak terikat ke workspace: Anthropic lalu meminta ID ini. Temukan di Console pada Workspaces. Kosongkan lalu tekan “Simpan” untuk menghapusnya.",
+      "de": "Nur für Organisations-API-Schlüssel, die keinem Workspace zugeordnet sind: Anthropic verlangt dann diese ID. Du findest sie in der Console unter Workspaces. Zum Entfernen leer lassen und auf Speichern klicken.",
+      "tr": "Yalnızca bir çalışma alanına kapsamı belirlenmemiş kuruluş API anahtarları içindir: Anthropic bu kimliği ister. Console'da Workspaces altında bulabilirsiniz. Kaldırmak için boş bırakıp Kaydet'e basın.",
+      "ko": "워크스페이스 범위가 지정되지 않은 조직 API 키에만 사용합니다. 이 경우 Anthropic에서 이 ID를 요구합니다. Console의 Workspaces에서 찾을 수 있습니다. 제거하려면 비워 두고 저장을 누르세요.",
+      "ja": "ワークスペースに限定されていない組織 API キー専用です。その場合 Anthropic がこの ID を要求します。Console の Workspaces で確認できます。削除するには空欄のまま保存してください。"
     }
   }
 }
