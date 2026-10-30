@@ -941,3 +941,4 @@ fn apply_rects(gw: &impl IsA<gtk::Widget>, rects: &[(f64, f64, f64, f64)]) {
 
 /// Windows-only taskbar query; Linux keeps upstream's top-centred placement.
 pub fn taskbar_rect() -> Option<(i32, i32, i32, i32)> { None }
+pub fn raise_above_taskbar(_win: &tauri::WebviewWindow) {}

@@ -589,7 +589,7 @@ pub fn spawn_cursor_poll(app: AppHandle, gate: Arc<PollGate>) {
                 let Some(win) = window(&app) else { continue };
                 // Fork: the taskbar is topmost too and climbs over the island when clicked.
                 if DOCK_BOTTOM && ticks.is_multiple_of(60) {
-                    let _ = win.set_always_on_top(true);
+                    platform::raise_above_taskbar(&win);
                 }
                 let Ok(origin) = win.outer_position() else { continue };
                 let scale = win.scale_factor().unwrap_or(1.0);

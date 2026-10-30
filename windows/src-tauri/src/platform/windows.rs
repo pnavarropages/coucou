@@ -372,6 +372,19 @@ pub fn taskbar_rect() -> Option<(i32, i32, i32, i32)> {
     }
 }
 
+/// Fork: put the island back above the taskbar. The taskbar is topmost too and
+/// climbs over it when clicked; `set_always_on_top(true)` is a no-op once the
+/// flag is already set, so the z-order is forced here.
+pub fn raise_above_taskbar(win: &WebviewWindow) {
+    use ::windows::Win32::UI::WindowsAndMessaging::{
+        SetWindowPos, HWND_TOPMOST, SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOSIZE,
+    };
+    let Some(hwnd) = hwnd_of(win) else { return };
+    unsafe {
+        let _ = SetWindowPos(hwnd, Some(HWND_TOPMOST), 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+    }
+}
+
 // ── Session windows ("Open terminal") ─────────────────────────────────────────
 //
 // See session_window.rs: the relay's ancestors lead to the terminal or editor
