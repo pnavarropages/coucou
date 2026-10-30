@@ -24,8 +24,9 @@ pub const STRIP_H: f64 = 6.0;
 /// Fork: dock the island at the bottom of the display, just above the taskbar,
 /// growing upwards. Must match `DOCK_BOTTOM` in src/core/layout.ts.
 pub const DOCK_BOTTOM: bool = true;
-/// Fork: logical height reserved above the taskbar (the compact island plus its margins).
-pub const STRIP_RESERVED: f64 = 44.0;
+/// Compact island size at the standard 48 logical-pixel Windows 11 taskbar.
+pub const COMPACT_W: f64 = 288.0;
+const TASKBAR_BASE_H: f64 = 48.0;
 
 pub const WINDOW_LABEL: &str = "island";
 
@@ -66,6 +67,8 @@ pub struct PollGate {
     active: Mutex<bool>,
     cv: Condvar,
     pub collapsed: AtomicBool,
+    /// Full panel above the taskbar, as opposed to the compact pill inside it.
+    pub expanded: AtomicBool,
     pub rect: Mutex<IslandRect>,
     /// Mirrors the window flag so we only call into the OS when it changes.
     ignoring: AtomicBool,
@@ -77,6 +80,7 @@ impl PollGate {
             active: Mutex::new(false),
             cv: Condvar::new(),
             collapsed: AtomicBool::new(true),
+            expanded: AtomicBool::new(true),
             rect: Mutex::new(IslandRect::default()),
             ignoring: AtomicBool::new(false),
         }
@@ -106,6 +110,95 @@ impl PollGate {
 
     pub(crate) fn is_active(&self) -> bool {
         *self.active.lock().unwrap()
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct PhysicalRect {
+    pub left: i32,
+    pub top: i32,
+    pub right: i32,
+    pub bottom: i32,
+}
+
+impl PhysicalRect {
+    fn width(self) -> i32 { self.right - self.left }
+    fn height(self) -> i32 { self.bottom - self.top }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+struct WindowGeometry {
+    x: i32,
+    y: i32,
+    width: u32,
+    height: u32,
+}
+
+/// Geometry for a bottom taskbar. A top/side/hidden bar returns None so the
+/// caller uses upstream's top-centred placement.
+fn taskbar_window_geometry(
+    monitor: PhysicalRect,
+    taskbar: PhysicalRect,
+    scale: f64,
+    expanded: bool,
+) -> Option<WindowGeometry> {
+    if !scale.is_finite() || scale <= 0.0 || monitor.width() <= 0 || monitor.height() <= 0 {
+        return None;
+    }
+    let bar_h = taskbar.height();
+    let at_bottom = (taskbar.bottom - monitor.bottom).abs() <= 2
+        && taskbar.top > monitor.top + monitor.height() / 2
+        && taskbar.width() > taskbar.height()
+        && bar_h >= (8.0 * scale).round() as i32;
+    if !at_bottom {
+        return None;
+    }
+
+    let (width, height, y) = if expanded {
+        let width = (PANEL_W * scale).round().max(1.0) as u32;
+        let wanted = (PANEL_H * scale).round().max(1.0) as i32;
+        let available = (taskbar.top - monitor.top).max(1);
+        let height = wanted.min(available) as u32;
+        (width, height, taskbar.top - height as i32)
+    } else {
+        let logical_bar_h = bar_h as f64 / scale;
+        let compact_scale = (logical_bar_h / TASKBAR_BASE_H).clamp(0.65, 1.75);
+        let width = (COMPACT_W * compact_scale * scale).round().max(1.0) as u32;
+        (width, bar_h as u32, taskbar.top)
+    };
+    let x = monitor.left + (monitor.width() - width as i32) / 2;
+    Some(WindowGeometry { x, y, width, height })
+}
+
+#[cfg(test)]
+mod taskbar_geometry_tests {
+    use super::*;
+
+    #[test]
+    fn compact_is_centered_inside_a_1080p_taskbar_at_100_percent() {
+        let monitor = PhysicalRect { left: 0, top: 0, right: 1920, bottom: 1080 };
+        let bar = PhysicalRect { left: 0, top: 1032, right: 1920, bottom: 1080 };
+        assert_eq!(
+            taskbar_window_geometry(monitor, bar, 1.0, false),
+            Some(WindowGeometry { x: 816, y: 1032, width: 288, height: 48 }),
+        );
+    }
+
+    #[test]
+    fn compact_uses_the_real_125_percent_taskbar_height() {
+        let monitor = PhysicalRect { left: 0, top: 0, right: 1536, bottom: 864 };
+        let bar = PhysicalRect { left: 0, top: 804, right: 1536, bottom: 864 };
+        assert_eq!(
+            taskbar_window_geometry(monitor, bar, 1.25, false),
+            Some(WindowGeometry { x: 588, y: 804, width: 360, height: 60 }),
+        );
+    }
+
+    #[test]
+    fn a_top_taskbar_falls_back_to_upstream_placement() {
+        let monitor = PhysicalRect { left: 0, top: 0, right: 1920, bottom: 1080 };
+        let bar = PhysicalRect { left: 0, top: 0, right: 1920, bottom: 48 };
+        assert_eq!(taskbar_window_geometry(monitor, bar, 1.0, false), None);
     }
 }
 
@@ -340,8 +433,36 @@ mod zoom_tests {
 }
 
 
+fn monitor_rect(m: &Monitor) -> PhysicalRect {
+    let p = m.position();
+    let s = m.size();
+    PhysicalRect {
+        left: p.x,
+        top: p.y,
+        right: p.x + s.width as i32,
+        bottom: p.y + s.height as i32,
+    }
+}
+
+/// The monitor that owns the real Windows taskbar and its physical rectangle.
+/// Other platforms return None and keep upstream's placement.
+fn taskbar_context(app: &AppHandle) -> Option<(Monitor, PhysicalRect)> {
+    let (left, top, right, bottom) = platform::taskbar_rect()?;
+    let taskbar = PhysicalRect { left, top, right, bottom };
+    let cx = left + (right - left) / 2;
+    let cy = top + (bottom - top) / 2;
+    let monitor = app.available_monitors().ok()?.into_iter().find(|m| {
+        let r = monitor_rect(m);
+        cx >= r.left && cx < r.right && cy >= r.top && cy < r.bottom
+    })?;
+    taskbar_window_geometry(monitor_rect(&monitor), taskbar, monitor.scale_factor(), false)?;
+    Some((monitor, taskbar))
+}
+
 pub fn screen_info(app: &AppHandle, pref: &str) -> ScreenInfo {
-    match target_monitor(app, pref) {
+    let dock = if DOCK_BOTTOM { taskbar_context(app) } else { None };
+    let monitor = dock.as_ref().map(|(m, _)| m.clone()).or_else(|| target_monitor(app, pref));
+    match monitor {
         Some(m) => {
             let scale = m.scale_factor();
             let p = m.position();
@@ -352,7 +473,7 @@ pub fn screen_info(app: &AppHandle, pref: &str) -> ScreenInfo {
                 width: s.width as f64 / scale,
                 height: s.height as f64 / scale,
                 scale,
-                taskbar: 0.0,
+                taskbar: dock.map(|(_, r)| r.height() as f64 / scale).unwrap_or(0.0),
             }
         }
         None => ScreenInfo { x: 0.0, y: 0.0, width: 1920.0, height: 1080.0, scale: 1.0, taskbar: 0.0 },
@@ -362,26 +483,28 @@ pub fn screen_info(app: &AppHandle, pref: &str) -> ScreenInfo {
 /// Places and sizes the window. `collapsed` picks the wake strip instead of the panel.
 pub fn apply_geometry(app: &AppHandle, pref: &str, collapsed: bool) {
     let Some(win) = window(app) else { return };
-    let Some(m) = target_monitor(app, pref) else { return };
+    let dock = if DOCK_BOTTOM { taskbar_context(app) } else { None };
+    let Some(m) = dock.as_ref().map(|(m, _)| m.clone()).or_else(|| target_monitor(app, pref)) else { return };
 
     let scale = m.scale_factor();
     let mp = *m.position();
     let ms = *m.size();
-
-    let (lw, lh) = if collapsed { (STRIP_W, STRIP_H) } else { (PANEL_W, PANEL_H) };
-    let pw = (lw * scale).round().max(1.0) as u32;
-    let ph = (lh * scale).round().max(1.0) as u32;
-    let x = mp.x + (ms.width as i32 - pw as i32) / 2;
-    // Fork: the window's bottom edge is the top of the taskbar (primary display) or
-    // of the screen; the island stands on it, and a strip is reserved for it below.
-    let monitor_bottom = mp.y + ms.height as i32;
-    let on_primary = mp.x == 0 && mp.y == 0;
-    let dock_bottom = if on_primary {
-        platform::taskbar_top(mp.y, ms.height as i32).unwrap_or(monitor_bottom)
+    let expanded = app
+        .try_state::<crate::Shared>()
+        .map(|s| s.gate.expanded.load(Ordering::Relaxed))
+        .unwrap_or(true);
+    let geometry = dock.and_then(|(_, taskbar)| {
+        taskbar_window_geometry(monitor_rect(&m), taskbar, scale, expanded && !collapsed)
+    });
+    let (pw, ph, x, y) = if let Some(g) = geometry {
+        (g.width, g.height, g.x, g.y)
     } else {
-        monitor_bottom
+        let (lw, lh) = if collapsed { (STRIP_W, STRIP_H) } else { (PANEL_W, PANEL_H) };
+        let pw = (lw * scale).round().max(1.0) as u32;
+        let ph = (lh * scale).round().max(1.0) as u32;
+        let x = mp.x + (ms.width as i32 - pw as i32) / 2;
+        (pw, ph, x, mp.y)
     };
-    let y = if DOCK_BOTTOM { dock_bottom - ph as i32 } else { mp.y };
 
     // GTK never sizes a non-resizable window below its natural size (200 px
     // here), so on Linux the 6 px wake strip would stay a 200 px block. tao
@@ -411,24 +534,20 @@ pub fn apply_geometry(app: &AppHandle, pref: &str, collapsed: bool) {
         }
     }
 
-    // Fork: apps maximise above the island instead of under it.
-    if DOCK_BOTTOM && on_primary {
-        let strip = ((crate::island::STRIP_RESERVED) * scale).round() as i32;
-        platform::reserve_strip(&win, mp.x, mp.x + ms.width as i32, dock_bottom, strip);
-    }
 }
 
 /// Position, size and scale of the monitor the island lives on. Any change here
 /// means the island has to be placed again.
-fn current_screen_key(app: &AppHandle) -> Option<(i32, i32, u32, u32, u64)> {
+fn current_screen_key(app: &AppHandle) -> Option<(i32, i32, u32, u32, u64, Option<(i32, i32, i32, i32)>)> {
     let pref = app
         .try_state::<crate::Shared>()
         .map(|s| s.settings.lock().unwrap().screen.clone())
         .unwrap_or_else(|| "primary".into());
-    let m = target_monitor(app, &pref)?;
+    let taskbar = platform::taskbar_rect();
+    let m = taskbar_context(app).map(|(m, _)| m).or_else(|| target_monitor(app, &pref))?;
     let p = m.position();
     let size = m.size();
-    Some((p.x, p.y, size.width, size.height, m.scale_factor().to_bits()))
+    Some((p.x, p.y, size.width, size.height, m.scale_factor().to_bits(), taskbar))
 }
 
 /// Emits `cursor` (window-logical coordinates) at ~60 Hz while the island is
@@ -438,7 +557,7 @@ pub fn spawn_cursor_poll(app: AppHandle, gate: Arc<PollGate>) {
         let mut was_down = false;
         // Remembered across wakes so a display change while hidden is noticed the
         // moment the island comes back.
-        let mut last_screen: Option<(i32, i32, u32, u32, u64)> = None;
+        let mut last_screen: Option<(i32, i32, u32, u32, u64, Option<(i32, i32, i32, i32)>)> = None;
         // Without a cursor to read (Linux) the loop only watches the display
         // layout, and twice a second is plenty for that: waking at 60 Hz just to
         // find no cursor costs CPU for nothing.

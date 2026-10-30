@@ -176,6 +176,16 @@ fn set_collapsed(app: AppHandle, shared: State<Shared>, collapsed: bool) {
     platform::set_pointer_watch(!collapsed);
 }
 
+/// Compact lives inside the taskbar; expanded grows upward from its top edge.
+#[tauri::command]
+fn set_island_expanded(app: AppHandle, shared: State<Shared>, expanded: bool) {
+    shared.gate.expanded.store(expanded, Ordering::Relaxed);
+    let pref = shared.settings.lock().unwrap().screen.clone();
+    let collapsed = shared.gate.collapsed.load(Ordering::Relaxed);
+    island::apply_geometry(&app, &pref, collapsed);
+    island::refresh_click_through(&app, &shared.gate);
+}
+
 /// The front end pushes the island shape; Rust decides click-through from it.
 #[tauri::command]
 fn set_island_rect(app: AppHandle, shared: State<Shared>, x: f64, y: f64, width: f64, height: f64) {
@@ -855,6 +865,7 @@ pub fn run() {
             save_settings,
             set_system_languages,
             set_collapsed,
+            set_island_expanded,
             set_island_rect,
             focus_window,
             reposition,
@@ -1076,9 +1087,6 @@ pub fn run() {
         .run(|app, event| {
             // Withdraw the phone link's announcement on the local network before the process ends.
             if let tauri::RunEvent::Exit = event {
-                if let Some(win) = island::window(app) {
-                    platform::release_strip(&win);
-                }
                 phone_link::stop_on_exit(app);
                 notes::shutdown(app);
                 // GOWA started by Coucou stops with it; the conversations were only in memory.

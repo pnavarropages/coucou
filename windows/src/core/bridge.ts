@@ -213,6 +213,9 @@ export const Bridge = {
   /** Shrink the window down to the invisible wake strip (hidden) or back to full. */
   setCollapsed: (collapsed: boolean) => call<void>("set_collapsed", { collapsed }),
 
+  /** Move the window between the compact taskbar slot and the panel above it. */
+  setIslandExpanded: (expanded: boolean) => call<void>("set_island_expanded", { expanded }),
+
   /**
    * Pushes the island shape in window coordinates. Rust flips click-through from
    * its own cursor poll, so the flag is never a frame behind a click.

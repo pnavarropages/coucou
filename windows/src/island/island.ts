@@ -4,7 +4,7 @@
 import { Tracked, Spring, clamp } from "../core/anim";
 import { Bridge, IS_TAURI, onDragDrop } from "../core/bridge";
 import {
-  DOCK_BOTTOM, DOCK_GAP, NOTCH_H,
+  DOCK_BOTTOM, NOTCH_H,
   EXPANDED_CORNER, EXPANDED_W, NOTCH_W, PANEL_H, PANEL_W,
   ROUNDED_CORNER, VIEW_LAYOUTS, botGlowColor, botGlowOpacity, botPosition, chatPromptHeight,
   islandSize,
@@ -384,6 +384,7 @@ export class Island {
     const prev = State.mode;
     if (mode === prev) return;
     State.mode = mode;
+    void Bridge.setIslandExpanded(mode === "expanded");
     if (mode === "expanded") Sound.play("open");
     if (prev === "expanded") {
       Sound.play("close");
@@ -692,6 +693,11 @@ export class Island {
 
   private targetSize(): { w: number; h: number; r: number } {
     let { w, h } = islandSize(State.mode, State.view, State.chatHistory.length);
+    if (State.mode === "compact" && State.taskbarH > 0) {
+      const scale = clamp(State.taskbarH / 48, 0.65, 1.75);
+      w *= scale;
+      h *= scale;
+    }
     if (State.mode === "expanded" && State.view === "question" && State.pendingApproval?.questions) {
       h = QUESTION_PICKER_H;
     }
@@ -719,12 +725,15 @@ export class Island {
     const r = this.radius.value;
     this.islandEl.style.width = `${w}px`;
     this.islandEl.style.height = `${hh}px`;
-    if (DOCK_BOTTOM) {
+    if (DOCK_BOTTOM && State.taskbarH > 0) {
       this.islandEl.classList.add("docked");
       this.islandEl.style.top = "auto";
       this.islandEl.style.bottom = `${this.dockBottom(hh)}px`;
       this.islandEl.style.borderRadius = `${r}px`;
     } else {
+      this.islandEl.classList.remove("docked");
+      this.islandEl.style.top = "0";
+      this.islandEl.style.bottom = "auto";
       this.islandEl.style.borderRadius = `0 0 ${r}px ${r}px`;
     }
     this.islandEl.style.transform = `translateX(-50%)`;
@@ -739,7 +748,7 @@ export class Island {
     const viewportW = window.innerWidth > 0 ? window.innerWidth : PANEL_W;
     const rect = { x: (viewportW - w) / 2, y: this.islandTop(hh), w, h: hh };
     const p = this.pushedRect;
-    if (Math.abs(p.x - rect.x) > 0.5 || Math.abs(p.w - rect.w) > 0.5 || Math.abs(p.h - rect.h) > 0.5) {
+    if (Math.abs(p.x - rect.x) > 0.5 || Math.abs(p.y - rect.y) > 0.5 || Math.abs(p.w - rect.w) > 0.5 || Math.abs(p.h - rect.h) > 0.5) {
       this.pushedRect = rect;
       void Bridge.setIslandRect(rect.x, rect.y, rect.w, rect.h);
     }
@@ -755,7 +764,7 @@ export class Island {
 
   /** Top edge of the island in window coordinates (fork: docked to the bottom). */
   private islandTop(h: number): number {
-    if (!DOCK_BOTTOM) return 0;
+    if (!DOCK_BOTTOM || State.taskbarH <= 0) return 0;
     const vh = window.innerHeight > 0 ? window.innerHeight : PANEL_H;
     return vh - this.dockBottom(h) - h;
   }
@@ -767,9 +776,9 @@ export class Island {
    */
   private dockBottom(h: number): number {
     const tb = State.taskbarH;
-    if (tb <= 0) return DOCK_GAP;
+    if (tb <= 0) return 0;
     const inBar = Math.max(2, (tb - h) / 2);
-    const above = tb + DOCK_GAP;
+    const above = 0;
     const t = clamp((h - NOTCH_H) / 40, 0, 1);
     return inBar + (above - inBar) * t;
   }

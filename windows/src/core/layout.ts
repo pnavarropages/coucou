@@ -57,8 +57,6 @@ export interface ViewLayout {
 /** Fork: the island sits at the bottom of the display (above the taskbar), never hides. Mirrors DOCK_BOTTOM in island.rs. */
 export const DOCK_BOTTOM = true;
 export const ALWAYS_VISIBLE = true;
-/** Gap between the island and the bottom of the window, px. */
-export const DOCK_GAP = 6;
 
 export const PANEL_W = 720;
 export const PANEL_H = 320;
