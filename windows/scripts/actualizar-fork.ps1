@@ -74,6 +74,12 @@ try {
     }
     Start-Process -FilePath $installedExe
     Write-UpdateLog "Actualizado $before -> $after e instalado $($installer.Name)."
+
+    # The rebase rewrote the branch: the lease refuses to overwrite commits pushed from elsewhere.
+    $pushOutput = (& git.exe -C $repoRoot push --force-with-lease origin barra-tareas 2>&1 | Out-String).Trim()
+    if ($LASTEXITCODE -ne 0) {
+        Write-UpdateLog "AVISO: no se pudo subir barra-tareas a origin: $pushOutput"
+    }
     exit 0
 }
 catch {
