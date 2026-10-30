@@ -32,6 +32,9 @@ use crate::island::WINDOW_LABEL;
 pub const RELEASES_URL: &str = "https://api.github.com/repos/Louis-CFM/coucou/releases?per_page=30";
 /// Where "What's new" goes when no release is known.
 pub const RELEASES_PAGE: &str = "https://github.com/Louis-CFM/coucou/releases";
+/// This fork is updated from source by windows/scripts/actualizar-fork.ps1.
+/// Official installers would replace the taskbar integration with upstream.
+const FORK_UPDATES_DISABLED: bool = true;
 
 /// This platform's release tags: `windows-vX.Y.Z` / `linux-vX.Y.Z`. Never the
 /// rolling `windows-latest` / `linux-latest`, nor the Mac's `v…` or Android's.
@@ -454,6 +457,10 @@ fn set_phase(app: &AppHandle, phase: Phase) {
 /// At launch: a first look 30 s in, then every hour (GitHub only every 6 h).
 /// The task sleeps in between: nothing runs while nothing is due.
 pub fn start(app: AppHandle) {
+    if FORK_UPDATES_DISABLED {
+        crate::log::line("official updater disabled in taskbar fork");
+        return;
+    }
     remove_old_downloads();
     tauri::async_runtime::spawn(async move {
         tokio::time::sleep(FIRST_TICK).await;
@@ -724,7 +731,7 @@ pub fn update_set_consent(app: AppHandle, allowed: bool) {
         save_prefs(&s.prefs);
     }
     changed(&app);
-    if allowed {
+    if allowed && !FORK_UPDATES_DISABLED {
         tauri::async_runtime::spawn(async move { check(&app, false).await });
     }
 }
@@ -732,7 +739,9 @@ pub fn update_set_consent(app: AppHandle, allowed: bool) {
 /// "Check now" (a click: works with the toggle off too).
 #[tauri::command]
 pub async fn update_check(app: AppHandle) -> Status {
-    check(&app, true).await;
+    if !FORK_UPDATES_DISABLED {
+        check(&app, true).await;
+    }
     status()
 }
 
@@ -756,7 +765,9 @@ pub fn update_shown(kind: String) {
 /// Settings → "Install X": opens the island's card on it.
 #[tauri::command]
 pub fn update_show(app: AppHandle) {
-    offer(&app, "show");
+    if !FORK_UPDATES_DISABLED {
+        offer(&app, "show");
+    }
 }
 
 /// "Later": this version stays quiet for a day; the tray and Settings keep offering it.
@@ -790,7 +801,9 @@ pub fn update_dismiss(app: AppHandle) {
 
 #[tauri::command]
 pub fn update_install(app: AppHandle) {
-    install(&app);
+    if !FORK_UPDATES_DISABLED {
+        install(&app);
+    }
 }
 
 /// "What's new" / "Get it on GitHub": the release's page (only ever a github.com address).
