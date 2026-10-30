@@ -242,6 +242,17 @@ pub fn update(app: &AppHandle, change: impl FnOnce(&mut PillState)) {
     }
 }
 
+/// Fork: places a shown pill again after a monitor, resolution or scale change,
+/// so it stays centred on the display it is on now.
+pub fn reposition(app: &AppHandle) {
+    let Some(pill) = get(app) else { return };
+    if !pill.shown.load(Ordering::Relaxed) {
+        return;
+    }
+    let state = pill.state.lock().unwrap().clone();
+    place(app, &pill, &state.edge, state.phase == "listening");
+}
+
 fn show(app: &AppHandle, pill: &Pill, visible: bool) {
     let Some(win) = window(app) else { return };
     match pill.mode {

@@ -582,6 +582,7 @@ pub fn spawn_cursor_poll(app: AppHandle, gate: Arc<PollGate>) {
                         if !first {
                             crate::log::line("display layout changed — repositioning");
                             let _ = app.emit_to(WINDOW_LABEL, "screen-changed", ());
+                            crate::flow::pill::reposition(&app);
                         }
                     }
                 }
