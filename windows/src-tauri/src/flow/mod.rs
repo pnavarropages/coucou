@@ -220,7 +220,6 @@ fn run(app: AppHandle, flow: Arc<Flow>, rx: mpsc::Receiver<(KeyEvent, Instant)>)
         let action = match received {
             Some((KeyEvent::Quit, _)) => {
                 drop(listening.take());
-                crate::voice::sync(&app);
                 break;
             }
             Some((KeyEvent::Down, at)) => logic.key_down(secs(at)),
@@ -276,7 +275,6 @@ fn run(app: AppHandle, flow: Arc<Flow>, rx: mpsc::Receiver<(KeyEvent, Instant)>)
             Action::Lock => pill::update(&app, |s| s.phase = "locked".into()),
             Action::Cancel => {
                 drop(listening.take());
-                crate::voice::sync(&app);
                 pill::update(&app, |s| s.phase = "idle".into());
             }
             Action::Finish => {
@@ -298,7 +296,9 @@ fn run(app: AppHandle, flow: Arc<Flow>, rx: mpsc::Receiver<(KeyEvent, Instant)>)
 
 /// Opens the microphone. None (and the pill says why) when it can't.
 fn begin(app: &AppHandle, flow: &Arc<Flow>) -> Option<Listening> {
+    crate::log::line("flow: key start requested");
     if !speech::is_ready() {
+        crate::log::line("flow: voice model not ready, not recording");
         pill::announce(
             app,
             "download",
@@ -310,10 +310,6 @@ fn begin(app: &AppHandle, flow: &Arc<Flow>) -> Option<Listening> {
         return None;
     }
     let mic = flow.store.lock().unwrap().prefs.mic.clone();
-    // « OK Coucou » normally owns a long-lived capture. It must release the
-    // device before Flow opens its capture, especially with Windows drivers
-    // that fail with buffer overruns when two clients record concurrently.
-    crate::voice::pause();
     let take = Arc::new(Mutex::new(audio::Take::default()));
     let sink_take = take.clone();
     let source = audio::Source::Mic(if mic.is_empty() { None } else { Some(mic) });
@@ -334,7 +330,6 @@ fn begin(app: &AppHandle, flow: &Arc<Flow>) -> Option<Listening> {
             Some(Listening { capture, take, started: Instant::now(), app: app_front })
         }
         Err(err) => {
-            crate::voice::sync(app);
             crate::log::line(format!("flow: microphone: {err}"));
             pill::update(app, |s| s.phase = "failed".into());
             pill::rest_after(app, "failed", 1800);
@@ -355,7 +350,6 @@ fn begin(app: &AppHandle, flow: &Arc<Flow>) -> Option<Listening> {
 /// thread so the key works again at once.
 fn finish(app: &AppHandle, flow: &Arc<Flow>, mut l: Listening, busy: Arc<AtomicBool>) {
     l.capture.stop();
-    crate::voice::sync(app);
     let seconds = l.started.elapsed().as_secs_f64();
     let (samples, peak) = {
         let mut t = l.take.lock().unwrap();

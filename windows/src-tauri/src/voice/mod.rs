@@ -42,7 +42,6 @@ pub struct VoiceView {
 
 struct Running {
     stop: Arc<AtomicBool>,
-    thread: Option<std::thread::JoinHandle<()>>,
 }
 
 static RUNNING: Mutex<Option<Running>> = Mutex::new(None);
@@ -62,19 +61,21 @@ pub fn requirements_met() -> bool {
 /// Starts or stops listening to follow the preference.
 pub fn sync(app: &AppHandle) {
     let wanted = crate::flow::get(app).is_some_and(|f| f.store.lock().unwrap().prefs.voice);
-    let active = RUNNING.lock().unwrap().is_some();
-    match (wanted && requirements_met(), active) {
+    let mut running = RUNNING.lock().unwrap();
+    match (wanted && requirements_met(), running.is_some()) {
         (true, false) => {
             let stop = Arc::new(AtomicBool::new(false));
             let app2 = app.clone();
             let stop2 = stop.clone();
-            let thread = std::thread::Builder::new().name("coucou-voice".into()).spawn(move || run(app2, stop2)).ok();
-            *RUNNING.lock().unwrap() = Some(Running { stop, thread });
+            std::thread::Builder::new().name("coucou-voice".into()).spawn(move || run(app2, stop2)).ok();
+            *running = Some(Running { stop });
             speech::preload();
             crate::log::line("voice: « OK Coucou » listening");
         }
         (false, true) => {
-            stop();
+            if let Some(r) = running.take() {
+                r.stop.store(true, Ordering::Relaxed);
+            }
             let dictation = crate::flow::get(app).is_some_and(|f| f.store.lock().unwrap().prefs.enabled);
             if !dictation && !crate::notes::is_recording(app) {
                 speech::unload();
@@ -90,24 +91,11 @@ pub fn is_listening() -> bool {
     RUNNING.lock().unwrap().is_some()
 }
 
-/// Gives the microphone to Flow or the Notetaker. The voice thread must be
-/// fully gone before another WASAPI capture is opened: some Windows drivers
-/// accept the second stream and then feed neither one reliably.
-pub fn pause() {
-    stop();
-}
-
-fn stop() {
-    let Some(mut running) = RUNNING.lock().unwrap().take() else { return };
-    running.stop.store(true, Ordering::Relaxed);
-    if let Some(thread) = running.thread.take() {
-        let _ = thread.join();
-    }
-}
-
 /// Starts again on another microphone.
 pub fn restart(app: &AppHandle) {
-    stop();
+    if let Some(r) = RUNNING.lock().unwrap().take() {
+        r.stop.store(true, Ordering::Relaxed);
+    }
     sync(app);
 }
 
